@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NoJinx - MLB No-Hitter Jinxing X Bot
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        DYNAMODB_TABLE_NAME: !Ref StateTable
+        DRY_RUN: 'false'
+
+Parameters:
+  XApiKey:
+    Type: String
+    NoEcho: true
+  XApiSecret:
+    Type: String
+    NoEcho: true
+  XAccessToken:
+    Type: String
+    NoEcho: true
+  XAccessSecret:
+    Type: String
+    NoEcho: true
+  OpenAIApiKey:
+    Type: String
+    NoEcho: true
+
+Resources:
+  NoJinxFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dist/index.lambdaHandler
+      CodeUri: ../
+      Description: Polls MLB games and jinxes no-hitters on X
+      Environment:
+        Variables:
+          X_API_KEY: !Ref XApiKey
+          X_API_SECRET: !Ref XApiSecret
+          X_ACCESS_TOKEN: !Ref XAccessToken
+          X_ACCESS_SECRET: !Ref XAccessSecret
+          OPENAI_API_KEY: !Ref OpenAIApiKey
+          MIN_INNING_THRESHOLD: '1'
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref StateTable
+      Events:
+        # Poll every minute during MLB game hours (11am - 1am ET)
+        GameHoursPoll:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 minute)
+            Description: Poll for no-hitters every minute
+            Enabled: true
+
+  StateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: nonojinx-state
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+Outputs:
+  FunctionArn:
+    Description: NoJinx Lambda function ARN
+    Value: !GetAtt NoJinxFunction.Arn
+  TableName:
+    Description: DynamoDB state table name
+    Value: !Ref StateTable

@@ -1,0 +1,25 @@
+{
+  "currentInning": 6,
+  "currentInningOrdinal": "6th",
+  "inningState": "Bottom",
+  "inningHalf": "Bottom",
+  "scheduledInnings": 9,
+  "innings": [
+    { "num": 1, "ordinalNum": "1st", "home": { "runs": 1, "hits": 2, "errors": 0 }, "away": { "runs": 0, "hits": 0, "errors": 0 } },
+    { "num": 2, "ordinalNum": "2nd", "home": { "runs": 0, "hits": 1, "errors": 0 }, "away": { "runs": 0, "hits": 0, "errors": 0 } },
+    { "num": 3, "ordinalNum": "3rd", "home": { "runs": 2, "hits": 3, "errors": 0 }, "away": { "runs": 0, "hits": 0, "errors": 0 } },
+    { "num": 4, "ordinalNum": "4th", "home": { "runs": 0, "hits": 0, "errors": 0 }, "away": { "runs": 0, "hits": 0, "errors": 0 } },
+    { "num": 5, "ordinalNum": "5th", "home": { "runs": 0, "hits": 1, "errors": 0 }, "away": { "runs": 0, "hits": 0, "errors": 0 } },
+    { "num": 6, "ordinalNum": "6th", "home": { "runs": 0, "hits": 0, "errors": 0 }, "away": { "runs": 0, "hits": 0, "errors": 0 } }
+  ],
+  "teams": {
+    "home": { "runs": 3, "hits": 7, "errors": 0, "leftOnBase": 4 },
+    "away": { "runs": 0, "hits": 0, "errors": 0, "leftOnBase": 0 }
+  },
+  "defense": {
+    "pitcher": { "id": 543037, "fullName": "Gerrit Cole", "link": "/api/v1/people/543037" }
+  },
+  "offense": {
+    "batter": { "id": 660271, "fullName": "Shohei Ohtani", "link": "/api/v1/people/660271" }
+  }
+}

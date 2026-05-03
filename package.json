@@ -1,0 +1,30 @@
+{
+  "name": "nonojinx",
+  "version": "1.0.0",
+  "description": "MLB no-hitter jinxing X bot",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "poll": "tsx src/index.ts --poll",
+    "simulate": "tsx src/simulate.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/lib-dynamodb": "^3.700.0",
+    "dotenv": "^17.4.2",
+    "gray-matter": "^4.0.3",
+    "openai": "^4.85.0",
+    "twitter-api-v2": "^1.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
