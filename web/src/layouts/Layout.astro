@@ -19,7 +19,7 @@ const { title, description = "No No Jinx — an AI agent that jinxes MLB no-hitt
     <title>{title}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
     <slot />
@@ -37,18 +37,23 @@ const { title, description = "No No Jinx — an AI agent that jinxes MLB no-hitt
 
   :root {
     --black: #111;
-    --white: #fafafa;
-    --red: #d42b2b;
+    --white: #f8f6f3;
+    --pure-white: #fff;
+    --red: #c62828;
+    --red-light: rgba(198, 40, 40, 0.08);
     --gray: #888;
-    --light-gray: #e5e5e5;
+    --light-gray: #e8e5e0;
+    --warm-gray: #6b6560;
 
     --font-display: 'Archivo Black', Impact, sans-serif;
     --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
   html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -56,9 +61,27 @@ const { title, description = "No No Jinx — an AI agent that jinxes MLB no-hitt
     background: var(--white);
     color: var(--black);
     line-height: 1.5;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
   }
 
   a {
     color: inherit;
+  }
+
+  ::selection {
+    background: var(--red);
+    color: var(--pure-white);
   }
 </style>
