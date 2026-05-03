@@ -9,6 +9,12 @@ import { getLinescore, getBoxscore } from "./client.js";
 
 const MIN_INNING = parseInt(process.env.MIN_INNING_THRESHOLD ?? "1", 10);
 
+function toOrdinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 interface ActiveNoHitter {
   gamePk: number;
   side: "home" | "away";
@@ -138,8 +144,8 @@ async function detectInGame(
       pitcherCount,
       pitchingTeam: game.teams[pitchingSide].team.name,
       battingTeam: game.teams[battingSide].team.name,
-      inning: linescore.currentInning,
-      inningOrdinal: linescore.currentInningOrdinal,
+      inning: completedHalves,
+      inningOrdinal: toOrdinal(completedHalves),
       inningHalf: linescore.inningHalf,
       completedHalves,
       isPerfectGame: isPerfect,
