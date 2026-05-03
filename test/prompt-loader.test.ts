@@ -7,7 +7,7 @@ describe("prompt-loader", () => {
 
     expect(prompt.model).toBe("gpt-4o-mini");
     expect(prompt.temperature).toBe(0.9);
-    expect(prompt.max_tokens).toBe(280);
+    expect(prompt.max_tokens).toBe(512);
     expect(prompt.tools).toHaveLength(2);
     expect(prompt.tools[0].name).toBe("get_no_hitter_context");
     expect(prompt.tools[1].name).toBe("post_to_x");

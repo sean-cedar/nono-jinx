@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createServer } from "node:http";
 import { getLiveGames, getFinishedGames, getSchedule, todayDateString } from "./mlb/client.js";
 import { detectNoHitters } from "./mlb/detector.js";
 import { createStore } from "./state/store.js";
@@ -7,6 +8,9 @@ import { runAgent } from "./agent/runner.js";
 import type { NoHitterEvent } from "./mlb/types.js";
 
 const store = createStore();
+const startedAt = new Date();
+let lastPollAt: Date | null = null;
+let lastPollResult: { eventsDetected: number; eventsPosted: number } | null = null;
 
 async function hasGamesToday(): Promise<boolean> {
   const games = await getSchedule(todayDateString());
@@ -40,7 +44,6 @@ export async function handler(): Promise<{
   const date = todayDateString();
   console.log(`NoJinx polling for ${date}`);
 
-  // Early exit if no games today
   if (!(await hasGamesToday())) {
     console.log("No games today. Exiting.");
     return { eventsDetected: 0, eventsPosted: 0 };
@@ -78,27 +81,45 @@ export async function handler(): Promise<{
 export const lambdaHandler = async (): Promise<{ statusCode: number; body: string }> => {
   try {
     const result = await handler();
-    return {
-      statusCode: 200,
-      body: JSON.stringify(result),
-    };
+    return { statusCode: 200, body: JSON.stringify(result) };
   } catch (err) {
     console.error("Handler error:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: String(err) }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: String(err) }) };
   }
 };
 
-// Local polling loop
+// Health check HTTP server for Railway
+function startHealthServer(): void {
+  const port = parseInt(process.env.PORT ?? "3000", 10);
+
+  const server = createServer((_req, res) => {
+    const uptimeMs = Date.now() - startedAt.getTime();
+    const status = {
+      status: "ok",
+      uptime: `${Math.floor(uptimeMs / 60000)}m`,
+      startedAt: startedAt.toISOString(),
+      lastPollAt: lastPollAt?.toISOString() ?? null,
+      lastPollResult,
+    };
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(status));
+  });
+
+  server.listen(port, () => {
+    console.log(`Health check server listening on port ${port}`);
+  });
+}
+
+// Polling loop
 async function pollLoop(): Promise<never> {
   const intervalMs = parseInt(process.env.POLL_INTERVAL_MS ?? "60000", 10);
-  console.log(`NoJinx polling loop started (every ${intervalMs / 1000}s). Press Ctrl+C to stop.\n`);
+  console.log(`NoJinx polling loop started (every ${intervalMs / 1000}s).\n`);
 
   while (true) {
     try {
       const result = await handler();
+      lastPollAt = new Date();
+      lastPollResult = result;
       if (result.eventsDetected > 0) {
         console.log(`  → ${result.eventsDetected} event(s), ${result.eventsPosted} posted\n`);
       }
@@ -109,14 +130,18 @@ async function pollLoop(): Promise<never> {
   }
 }
 
-// Direct invocation for local dev
+// Entry point
 const isDirectRun =
   process.argv[1] &&
   (process.argv[1].endsWith("index.ts") || process.argv[1].endsWith("index.js"));
 
 if (isDirectRun) {
-  const useLoop = process.argv.includes("--poll");
+  const useLoop = process.argv.includes("--poll") || process.env.RAILWAY_ENVIRONMENT;
+
   if (useLoop) {
+    if (process.env.PORT || process.env.RAILWAY_ENVIRONMENT) {
+      startHealthServer();
+    }
     pollLoop();
   } else {
     handler()

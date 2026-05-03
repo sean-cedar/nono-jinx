@@ -11,11 +11,13 @@
     "simulate": "tsx src/simulate.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "start": "node dist/index.js --poll"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.700.0",
     "@aws-sdk/lib-dynamodb": "^3.700.0",
+    "@upstash/redis": "^1.37.0",
     "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",
     "openai": "^4.85.0",
