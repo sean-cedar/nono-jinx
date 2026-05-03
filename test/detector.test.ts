@@ -42,6 +42,7 @@ function makeState(overrides: Partial<NoHitterState> = {}): NoHitterState {
     battingTeam: "Los Angeles Dodgers",
     lastReportedInning: 4,
     lastReportedHalf: "Bottom",
+    lastCompletedHalves: 4,
     isPerfectGame: true,
     startedAt: new Date().toISOString(),
     ...overrides,
@@ -139,7 +140,7 @@ describe("detectNoHitters", () => {
     const result = await detectNoHitters(
       [makeGame(12345)],
       [],
-      { "12345-home": makeState({ lastReportedInning: 6, lastReportedHalf: "Bottom" }) },
+      { "12345-home": makeState({ lastReportedInning: 6, lastReportedHalf: "Bottom", lastCompletedHalves: 6 }) },
     );
 
     expect(result.events).toHaveLength(0);

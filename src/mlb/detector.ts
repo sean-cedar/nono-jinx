@@ -20,6 +20,7 @@ interface ActiveNoHitter {
   inning: number;
   inningOrdinal: string;
   inningHalf: "Top" | "Bottom";
+  completedHalves: number;
   isPerfectGame: boolean;
   pitchCount?: number;
   strikeouts?: number;
@@ -112,6 +113,13 @@ async function detectInGame(
     const completedHalves = completedHalfInnings(linescore, battingSide);
     if (completedHalves < MIN_INNING) continue;
 
+    // Ensure at least one at-bat has actually occurred — guards against
+    // pre-game states where hits=0 simply because nobody has batted yet.
+    const atBats = boxscore.teams[battingSide].teamStats.batting.atBats;
+    const walks = boxscore.teams[battingSide].teamStats.batting.baseOnBalls;
+    const hbp = boxscore.teams[battingSide].teamStats.batting.hitByPitch;
+    if (atBats + walks + hbp === 0) continue;
+
     const pitcherCount = boxscore.teams[pitchingSide].pitchers.length;
     const isPerfect = checkPerfectGame(boxscore, battingSide, pitchingSide);
     const currentPitcherName = linescore.defense?.pitcher?.fullName ?? "Unknown Pitcher";
@@ -129,6 +137,7 @@ async function detectInGame(
       inning: linescore.currentInning,
       inningOrdinal: linescore.currentInningOrdinal,
       inningHalf: linescore.inningHalf,
+      completedHalves,
       isPerfectGame: isPerfect,
       pitchCount: pitchingStats.numberOfPitches,
       strikeouts: pitchingStats.strikeOuts,
@@ -219,11 +228,10 @@ export async function detectNoHitters(
         );
       }
 
-      // Check if inning advanced
-      const advanced =
-        active.inning > existing.lastReportedInning ||
-        (active.inning === existing.lastReportedInning &&
-          active.inningHalf !== existing.lastReportedHalf);
+      // Only post again when the batting side has completed another half-inning,
+      // not when the game clock advances for the other side's at-bat.
+      const prevHalves = existing.lastCompletedHalves ?? 0;
+      const advanced = active.completedHalves > prevHalves;
 
       if (advanced) {
         const type = active.isPerfectGame
@@ -242,6 +250,7 @@ export async function detectNoHitters(
       battingTeam: active.battingTeam,
       lastReportedInning: active.inning,
       lastReportedHalf: active.inningHalf,
+      lastCompletedHalves: active.completedHalves,
       isPerfectGame: active.isPerfectGame,
       startedAt: existing?.startedAt ?? new Date().toISOString(),
     };

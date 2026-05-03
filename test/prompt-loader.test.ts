@@ -11,7 +11,7 @@ describe("prompt-loader", () => {
     expect(prompt.tools).toHaveLength(2);
     expect(prompt.tools[0].name).toBe("get_no_hitter_context");
     expect(prompt.tools[1].name).toBe("post_to_x");
-    expect(prompt.systemPrompt).toContain("NoJinx");
+    expect(prompt.systemPrompt).toContain("No No Jinx");
     expect(prompt.systemPrompt).toContain("JINX");
   });
 

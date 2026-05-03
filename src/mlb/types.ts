@@ -184,6 +184,7 @@ export interface NoHitterState {
   battingTeam: string;
   lastReportedInning: number;
   lastReportedHalf: "Top" | "Bottom";
+  lastCompletedHalves: number;
   isPerfectGame: boolean;
   startedAt: string;
 }

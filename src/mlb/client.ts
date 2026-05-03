@@ -22,9 +22,17 @@ export async function getSchedule(date: string): Promise<ScheduleGame[]> {
   return data.dates[0].games;
 }
 
+const PRE_PLAY_STATES = new Set([
+  "Pre-Game", "Warmup", "Delayed Start", "Delayed", "Scheduled",
+]);
+
 export async function getLiveGames(date: string): Promise<ScheduleGame[]> {
   const games = await getSchedule(date);
-  return games.filter((g) => g.status.abstractGameState === "Live");
+  return games.filter(
+    (g) =>
+      g.status.abstractGameState === "Live" &&
+      !PRE_PLAY_STATES.has(g.status.detailedState),
+  );
 }
 
 export async function getFinishedGames(date: string): Promise<ScheduleGame[]> {
