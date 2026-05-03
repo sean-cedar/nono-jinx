@@ -120,9 +120,13 @@ async function detectInGame(
     const hbp = boxscore.teams[battingSide].teamStats.batting.hitByPitch;
     if (atBats + walks + hbp === 0) continue;
 
-    const pitcherCount = boxscore.teams[pitchingSide].pitchers.length;
+    const pitcherIds = boxscore.teams[pitchingSide].pitchers;
+    const pitcherCount = pitcherIds.length;
     const isPerfect = checkPerfectGame(boxscore, battingSide, pitchingSide);
-    const currentPitcherName = linescore.defense?.pitcher?.fullName ?? "Unknown Pitcher";
+    const currentPitcherId = pitcherIds[pitcherIds.length - 1];
+    const currentPitcherName = currentPitcherId
+      ? boxscore.teams[pitchingSide].players[`ID${currentPitcherId}`]?.person?.fullName ?? "Unknown Pitcher"
+      : "Unknown Pitcher";
     const startingPitcherName = resolveStartingPitcher(boxscore, pitchingSide);
     const pitchingStats = boxscore.teams[pitchingSide].teamStats.pitching;
 
