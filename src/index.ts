@@ -5,6 +5,7 @@ import { detectNoHitters } from "./mlb/detector.js";
 import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
+import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
 import type { NoHitterEvent } from "./mlb/types.js";
 
 const store = createStore();
@@ -94,10 +95,13 @@ function startHealthServer(): void {
 
   const server = createServer((_req, res) => {
     const uptimeMs = Date.now() - startedAt.getTime();
+    const polling = shouldPoll();
     const status = {
       status: "ok",
       uptime: `${Math.floor(uptimeMs / 60000)}m`,
       startedAt: startedAt.toISOString(),
+      polling,
+      nextPollWindow: polling ? "now" : formatSleepDuration(msUntilNextPollWindow()),
       lastPollAt: lastPollAt?.toISOString() ?? null,
       lastPollResult,
     };
@@ -110,12 +114,19 @@ function startHealthServer(): void {
   });
 }
 
-// Polling loop
+// Polling loop with time-aware scheduling
 async function pollLoop(): Promise<never> {
   const intervalMs = parseInt(process.env.POLL_INTERVAL_MS ?? "60000", 10);
-  console.log(`NoJinx polling loop started (every ${intervalMs / 1000}s).\n`);
+  console.log(`NoJinx polling loop started (every ${intervalMs / 1000}s during game hours).\n`);
 
   while (true) {
+    if (!shouldPoll()) {
+      const sleepMs = msUntilNextPollWindow();
+      console.log(`Outside game hours/season. Sleeping for ${formatSleepDuration(sleepMs)}...`);
+      await new Promise((resolve) => setTimeout(resolve, sleepMs));
+      continue;
+    }
+
     try {
       const result = await handler();
       lastPollAt = new Date();

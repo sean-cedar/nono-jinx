@@ -4,23 +4,48 @@ import type { PromptConfig } from "./prompt-loader.js";
 import type { NoHitterEvent } from "../mlb/types.js";
 import { executeTool } from "./tools.js";
 import { getHandle } from "../mlb/handles.js";
+import { hasRedisConfig, getHashtags as getRedisHashtags } from "../state/redis.js";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-let teamHashtags: Record<string, string> | null = null;
 
-function getTeamHashtag(teamName: string): string | null {
-  if (!teamHashtags) {
+let teamHashtags: Record<string, string> | null = null;
+let hashtagsLoadedAt = 0;
+const CACHE_TTL_MS = 120_000;
+
+function loadHashtagsFromFile(): Record<string, string> {
+  try {
+    const raw = readFileSync(resolve(__dirname, "../../data/team-hashtags.json"), "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+async function loadHashtags(): Promise<Record<string, string>> {
+  const now = Date.now();
+  if (teamHashtags && now - hashtagsLoadedAt < CACHE_TTL_MS) return teamHashtags;
+
+  if (hasRedisConfig()) {
     try {
-      const raw = readFileSync(resolve(__dirname, "../../data/team-hashtags.json"), "utf-8");
-      teamHashtags = JSON.parse(raw);
+      teamHashtags = await getRedisHashtags();
+      hashtagsLoadedAt = now;
+      return teamHashtags;
     } catch {
-      teamHashtags = {};
+      if (teamHashtags) return teamHashtags;
     }
   }
-  return teamHashtags![teamName] ?? null;
+
+  teamHashtags = loadHashtagsFromFile();
+  hashtagsLoadedAt = now;
+  return teamHashtags;
+}
+
+async function getTeamHashtag(teamName: string): Promise<string | null> {
+  const hashtags = await loadHashtags();
+  return hashtags[teamName] ?? null;
 }
 
 let openaiClient: OpenAI | null = null;
@@ -42,7 +67,7 @@ function buildToolDefs(prompt: PromptConfig): ChatCompletionTool[] {
   }));
 }
 
-function buildUserMessage(event: NoHitterEvent): string {
+async function buildUserMessage(event: NoHitterEvent): Promise<string> {
   const lines = [
     `Event: ${event.type}`,
     `Game PK: ${event.gamePk}`,
@@ -58,15 +83,15 @@ function buildUserMessage(event: NoHitterEvent): string {
   if (event.pitchCount !== undefined) lines.push(`Pitch Count: ${event.pitchCount}`);
   if (event.strikeouts !== undefined) lines.push(`Strikeouts: ${event.strikeouts}`);
 
-  const currentHandle = getHandle(event.pitcherName);
-  const starterHandle = getHandle(event.startingPitcherName);
+  const currentHandle = await getHandle(event.pitcherName);
+  const starterHandle = await getHandle(event.startingPitcherName);
   if (currentHandle) lines.push(`Current Pitcher X Handle: @${currentHandle}`);
   if (starterHandle && event.startingPitcherName !== event.pitcherName) {
     lines.push(`Starting Pitcher X Handle: @${starterHandle}`);
   }
 
-  const pitchingTag = getTeamHashtag(event.pitchingTeam);
-  const battingTag = getTeamHashtag(event.battingTeam);
+  const pitchingTag = await getTeamHashtag(event.pitchingTeam);
+  const battingTag = await getTeamHashtag(event.battingTeam);
   const tags = [pitchingTag, battingTag].filter(Boolean);
   if (tags.length > 0) lines.push(`Game Hashtags: ${tags.join(" ")}`);
 
@@ -84,7 +109,7 @@ export async function runAgent(
 
   const messages: ChatCompletionMessageParam[] = [
     { role: "system", content: prompt.systemPrompt },
-    { role: "user", content: buildUserMessage(event) },
+    { role: "user", content: await buildUserMessage(event) },
   ];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -106,13 +131,10 @@ export async function runAgent(
     messages.push(message);
 
     if (choice.finish_reason === "stop" || !message.tool_calls?.length) {
-      // LLM finished without calling post_to_x — shouldn't happen with good prompts,
-      // but handle gracefully
       console.warn("Agent finished without tool calls. Response:", message.content);
       return { posted: false, text: message.content ?? undefined };
     }
 
-    // Execute all tool calls
     for (const toolCall of message.tool_calls) {
       const args = JSON.parse(toolCall.function.arguments);
       console.log(`Tool call: ${toolCall.function.name}(${JSON.stringify(args)})`);

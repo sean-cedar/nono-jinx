@@ -1,0 +1,153 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { isAuthenticated } from '../lib/auth';
+import AdminPanel from '../components/AdminPanel';
+
+const authed = isAuthenticated(Astro.request);
+---
+
+<Layout title="NoJinx Admin">
+  <div class="admin-wrapper">
+    <header class="admin-header">
+      <a href="/" class="admin-back">← NoJinx</a>
+      <h1 class="admin-title">Admin</h1>
+    </header>
+    {authed ? (
+      <AdminPanel client:load />
+    ) : (
+      <div class="login-wrapper">
+        <form id="login-form" class="login-form">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter admin password" autocomplete="current-password" required />
+          <button type="submit">Sign In</button>
+          <p id="login-error" class="login-error" style="display:none"></p>
+        </form>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById('login-form') as HTMLFormElement | null;
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw = (document.getElementById('password') as HTMLInputElement).value;
+      const errEl = document.getElementById('login-error')!;
+      errEl.style.display = 'none';
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        errEl.textContent = 'Invalid password';
+        errEl.style.display = 'block';
+      }
+    });
+  }
+</script>
+
+<style>
+  .admin-wrapper {
+    min-height: 100vh;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 2rem 1.5rem;
+  }
+
+  .admin-header {
+    max-width: 960px;
+    margin: 0 auto 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .admin-back {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+
+  .admin-back:hover {
+    opacity: 1;
+    color: var(--gold);
+  }
+
+  .admin-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+  }
+
+  .login-wrapper {
+    max-width: 360px;
+    margin: 8rem auto;
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .login-form label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.6;
+  }
+
+  .login-form input {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 3px;
+    color: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .login-form input:focus {
+    border-color: var(--gold);
+  }
+
+  .login-form button {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    padding: 0.75rem;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .login-form button:hover {
+    background: var(--cream);
+  }
+
+  .login-error {
+    color: var(--red);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+</style>

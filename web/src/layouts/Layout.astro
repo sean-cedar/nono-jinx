@@ -1,0 +1,68 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "The bot that jinxes MLB no-hitters. Every. Single. Time." } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --ink: #1a1410;
+    --cream: #f5f0e8;
+    --gold: #c8a94e;
+    --red: #c4302b;
+    --red-dark: #8b1a17;
+    --green: #2d5a27;
+    --green-field: #3a7a32;
+    --chalk: #e8e2d4;
+    --shadow: rgba(26, 20, 16, 0.15);
+
+    --font-display: 'Oswald', sans-serif;
+    --font-body: 'Source Serif 4', Georgia, serif;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  a {
+    color: inherit;
+  }
+</style>

@@ -1,39 +1,51 @@
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { hasRedisConfig, getHandles as getRedisHandles } from "../state/redis.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const HANDLES_PATH = resolve(__dirname, "../../data/x-handles.json");
 
 let handleMap: Record<string, string> | null = null;
+let lastLoadedAt = 0;
+const CACHE_TTL_MS = 120_000; // refresh from Redis every 2 minutes
 
-function loadHandles(): Record<string, string> {
-  if (handleMap) return handleMap;
+function loadFromFile(): Record<string, string> {
   try {
     const raw = readFileSync(HANDLES_PATH, "utf-8");
-    handleMap = JSON.parse(raw);
-    return handleMap!;
+    return JSON.parse(raw);
   } catch {
-    handleMap = {};
-    return handleMap;
+    return {};
   }
 }
 
-/**
- * Look up a player's verified X handle.
- * Returns "@Handle" if found, or the player's full name if not.
- */
-export function resolvePlayerTag(fullName: string): string {
-  const handles = loadHandles();
+async function loadHandles(): Promise<Record<string, string>> {
+  const now = Date.now();
+  if (handleMap && now - lastLoadedAt < CACHE_TTL_MS) return handleMap;
+
+  if (hasRedisConfig()) {
+    try {
+      handleMap = await getRedisHandles();
+      lastLoadedAt = now;
+      return handleMap;
+    } catch {
+      if (handleMap) return handleMap;
+    }
+  }
+
+  handleMap = loadFromFile();
+  lastLoadedAt = now;
+  return handleMap;
+}
+
+export async function resolvePlayerTag(fullName: string): Promise<string> {
+  const handles = await loadHandles();
   const handle = handles[fullName];
   if (handle) return `@${handle}`;
   return fullName;
 }
 
-/**
- * Returns the handle without @ prefix, or null if not found.
- */
-export function getHandle(fullName: string): string | null {
-  const handles = loadHandles();
+export async function getHandle(fullName: string): Promise<string | null> {
+  const handles = await loadHandles();
   return handles[fullName] ?? null;
 }
