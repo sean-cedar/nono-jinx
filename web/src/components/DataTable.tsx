@@ -49,7 +49,7 @@ export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valu
         const json = await res.json();
         throw new Error(json.error ?? 'Save failed');
       }
-      setSuccess('Saved. Bot picks up changes within 2 minutes.');
+      setSuccess('Saved. Changes picked up within 2 minutes.');
       setTimeout(() => setSuccess(''), 4000);
     } catch (e) {
       setError(String(e));
