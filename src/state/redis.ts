@@ -66,3 +66,20 @@ export async function getPostHistory(limit = 20): Promise<PostHistoryEntry[]> {
   const raw = await redis.lrange<string>(HISTORY_KEY, 0, limit - 1);
   return raw.map((item) => typeof item === "string" ? JSON.parse(item) : item as unknown as PostHistoryEntry);
 }
+
+// Deduplication — prevent double-posting for the same pitcher/inning combination.
+// Keys expire after 6 hours (well beyond a single game).
+const DEDUP_TTL = 6 * 60 * 60;
+
+export async function hasPosted(eventKey: string): Promise<boolean> {
+  if (!hasRedisConfig()) return false;
+  const redis = await getRedis();
+  const val = await redis.get(`nonojinx:posted:${eventKey}`);
+  return val !== null;
+}
+
+export async function markPosted(eventKey: string): Promise<void> {
+  if (!hasRedisConfig()) return;
+  const redis = await getRedis();
+  await redis.set(`nonojinx:posted:${eventKey}`, "1", { ex: DEDUP_TTL });
+}

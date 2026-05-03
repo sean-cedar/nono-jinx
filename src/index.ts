@@ -6,7 +6,7 @@ import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
-import { hasRedisConfig, logPost } from "./state/redis.js";
+import { hasRedisConfig, logPost, hasPosted, markPosted } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
 import type { NoHitterEvent } from "./mlb/types.js";
 
@@ -14,6 +14,7 @@ const store = createStore();
 const startedAt = new Date();
 let lastPollAt: Date | null = null;
 let lastPollResult: { eventsDetected: number; eventsPosted: number } | null = null;
+let processing = false;
 
 async function hasGamesToday(): Promise<boolean> {
   const games = await getSchedule(todayDateString());
@@ -87,13 +88,25 @@ export async function handler(): Promise<{
 
   console.log(`Detected ${events.length} event(s)`);
 
+  // Save state BEFORE processing events so a container restart won't
+  // re-detect the same no-hitter from stale state.
+  await store.save(updatedState);
+
+  processing = true;
   let posted = 0;
   for (const event of events) {
+    const dedupKey = `${event.gamePk}-${event.pitcherName}-${event.type}-${event.inning}`;
+    if (await hasPosted(dedupKey)) {
+      console.log(`Skipping duplicate: ${dedupKey}`);
+      continue;
+    }
     const success = await processEvent(event);
-    if (success) posted++;
+    if (success) {
+      await markPosted(dedupKey);
+      posted++;
+    }
   }
-
-  await store.save(updatedState);
+  processing = false;
 
   return { eventsDetected: events.length, eventsPosted: posted };
 }
@@ -161,8 +174,15 @@ async function pollLoop(): Promise<never> {
   }
 }
 
-process.on("SIGTERM", () => {
+process.on("SIGTERM", async () => {
   console.log("Received SIGTERM, shutting down gracefully.");
+  if (processing) {
+    console.log("Waiting for in-flight event processing to finish...");
+    const start = Date.now();
+    while (processing && Date.now() - start < 25_000) {
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
   process.exit(0);
 });
 
