@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { DataTable } from './DataTable';
+import { PostHistory } from './PostHistory';
 
-type Tab = 'handles' | 'hashtags';
+type Tab = 'handles' | 'hashtags' | 'history';
 
 export default function AdminPanel() {
   const [tab, setTab] = useState<Tab>('handles');
@@ -20,6 +21,9 @@ export default function AdminPanel() {
           </TabButton>
           <TabButton active={tab === 'hashtags'} onClick={() => setTab('hashtags')}>
             Team Hashtags
+          </TabButton>
+          <TabButton active={tab === 'history'} onClick={() => setTab('history')}>
+            Post History
           </TabButton>
         </div>
         <button onClick={handleLogout} style={logoutStyle}>
@@ -46,6 +50,7 @@ export default function AdminPanel() {
           valuePlaceholder="e.g. #RepBX"
         />
       )}
+      {tab === 'history' && <PostHistory />}
     </div>
   );
 }

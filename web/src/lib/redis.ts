@@ -31,3 +31,20 @@ export async function getHashtags(): Promise<Record<string, string>> {
 export async function setHashtags(data: Record<string, string>): Promise<void> {
   await getRedis().set(HASHTAGS_KEY, data);
 }
+
+const HISTORY_KEY = "nonojinx:history";
+
+export interface PostHistoryEntry {
+  timestamp: string;
+  eventType: string;
+  pitcherName: string;
+  pitchingTeam: string;
+  battingTeam: string;
+  inning: string;
+  tweetText: string;
+}
+
+export async function getPostHistory(limit = 10): Promise<PostHistoryEntry[]> {
+  const raw = await getRedis().lrange<string>(HISTORY_KEY, 0, limit - 1);
+  return raw.map((item) => typeof item === "string" ? JSON.parse(item) : item as unknown as PostHistoryEntry);
+}

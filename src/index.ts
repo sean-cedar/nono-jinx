@@ -6,6 +6,8 @@ import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
+import { hasRedisConfig, logPost } from "./state/redis.js";
+import { notifyPost, notifyError } from "./notify.js";
 import type { NoHitterEvent } from "./mlb/types.js";
 
 const store = createStore();
@@ -27,6 +29,23 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
 
     if (result.posted) {
       console.log(`Posted: "${result.text}"`);
+      const teams = `${event.pitchingTeam} vs ${event.battingTeam}`;
+      if (hasRedisConfig()) {
+        try {
+          await logPost({
+            timestamp: new Date().toISOString(),
+            eventType: event.type,
+            pitcherName: event.pitcherName,
+            pitchingTeam: event.pitchingTeam,
+            battingTeam: event.battingTeam,
+            inning: `${event.inningHalf} ${event.inningOrdinal}`,
+            tweetText: result.text ?? "",
+          });
+        } catch (err) {
+          console.error("Failed to log post to history:", err);
+        }
+      }
+      await notifyPost(result.text ?? "", event.pitcherName, teams);
       return true;
     } else {
       console.warn(`Agent did not post for event ${event.type}`);
@@ -34,6 +53,7 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
     }
   } catch (err) {
     console.error(`Error processing event ${event.type}:`, err);
+    await notifyError(`Processing ${event.type} for ${event.pitcherName}`, err);
     return false;
   }
 }
