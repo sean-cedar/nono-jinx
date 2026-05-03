@@ -46,6 +46,31 @@ function timeAgo(timestamp: string): string {
       </div>
     </section>
 
+    <!-- ═══ FEED ═══ -->
+    {tweets.length > 0 && (
+      <section class="feed">
+        <span class="section-label">Recent jinxes</span>
+        <div class="feed-grid">
+          {tweets.map((tweet) => (
+            <a href={`https://x.com/nono_jinx/status/${tweet.id}`} target="_blank" rel="noopener" class="tweet-card">
+              <div class="tweet-header">
+                <div class="tweet-author">
+                  <img src="/avatar.png" alt="" class="tweet-avatar" width="36" height="36" loading="lazy" />
+                  <div>
+                    <span class="tweet-name">No No Jinx</span>
+                    <span class="tweet-handle">@nono_jinx</span>
+                  </div>
+                </div>
+                <svg class="tweet-x-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </div>
+              <p class="tweet-body">{tweet.text}</p>
+              <time class="tweet-time">{timeAgo(tweet.created_at)}</time>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
     <!-- ═══ HOW IT WORKS ═══ -->
     <section class="how">
       <span class="section-label">How it works</span>
@@ -115,31 +140,6 @@ function timeAgo(timestamp: string): string {
         </div>
       </div>
     </section>
-
-    <!-- ═══ FEED ═══ -->
-    {tweets.length > 0 && (
-      <section class="feed">
-        <span class="section-label">Recent jinxes</span>
-        <div class="feed-grid">
-          {tweets.map((tweet) => (
-            <a href={`https://x.com/nono_jinx/status/${tweet.id}`} target="_blank" rel="noopener" class="tweet-card">
-              <div class="tweet-header">
-                <div class="tweet-author">
-                  <img src="/avatar.png" alt="" class="tweet-avatar" width="36" height="36" loading="lazy" />
-                  <div>
-                    <span class="tweet-name">No No Jinx</span>
-                    <span class="tweet-handle">@nono_jinx</span>
-                  </div>
-                </div>
-                <svg class="tweet-x-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              </div>
-              <p class="tweet-body">{tweet.text}</p>
-              <time class="tweet-time">{timeAgo(tweet.created_at)}</time>
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
 
     <!-- ═══ FOOTER ═══ -->
     <footer>
