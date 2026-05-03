@@ -34,6 +34,7 @@ export default function AdminPanel() {
           valueLabel="X Handle"
           keyPlaceholder="e.g. Gerrit Cole"
           valuePlaceholder="e.g. GerritCole45"
+          linkPrefix="https://x.com/"
         />
       )}
       {tab === 'hashtags' && (

@@ -6,9 +6,10 @@ interface DataTableProps {
   valueLabel: string;
   keyPlaceholder: string;
   valuePlaceholder: string;
+  linkPrefix?: string;
 }
 
-export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valuePlaceholder }: DataTableProps) {
+export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valuePlaceholder, linkPrefix }: DataTableProps) {
   const [data, setData] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -74,8 +75,18 @@ export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valu
     save(updated);
   };
 
-  const handleUpdate = (oldKey: string, newVal: string) => {
-    const updated = { ...data, [oldKey]: newVal };
+  const handleUpdateKey = (oldKey: string, newKeyVal: string) => {
+    if (newKeyVal === oldKey || !newKeyVal.trim()) return;
+    const updated: Record<string, string> = {};
+    for (const [k, v] of Object.entries(data)) {
+      updated[k === oldKey ? newKeyVal.trim() : k] = v;
+    }
+    setData(updated);
+    save(updated);
+  };
+
+  const handleUpdateValue = (key: string, newVal: string) => {
+    const updated = { ...data, [key]: newVal };
     setData(updated);
     save(updated);
   };
@@ -108,16 +119,24 @@ export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valu
             <tr>
               <th style={thStyle}>{keyLabel}</th>
               <th style={thStyle}>{valueLabel}</th>
-              <th style={{ ...thStyle, width: 40 }}></th>
+              {linkPrefix && <th style={{ ...thStyle, width: 30 }}></th>}
+              <th style={{ ...thStyle, width: 30 }}></th>
             </tr>
           </thead>
           <tbody>
             {filtered.sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => (
               <tr key={key} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <td style={tdStyle}>{key}</td>
                 <td style={tdStyle}>
-                  <EditableCell value={value} onSave={(v) => handleUpdate(key, v)} disabled={saving} />
+                  <EditableCell value={key} onSave={(v) => handleUpdateKey(key, v)} disabled={saving} />
                 </td>
+                <td style={tdStyle}>
+                  <EditableCell value={value} onSave={(v) => handleUpdateValue(key, v)} disabled={saving} />
+                </td>
+                {linkPrefix && (
+                  <td style={{ ...tdStyle, textAlign: 'center' }}>
+                    <a href={`${linkPrefix}${value}`} target="_blank" rel="noopener noreferrer" style={linkStyle} title={`@${value}`}>↗</a>
+                  </td>
+                )}
                 <td style={{ ...tdStyle, textAlign: 'center' }}>
                   <button onClick={() => handleDelete(key)} disabled={saving} style={delStyle}>×</button>
                 </td>
@@ -209,6 +228,12 @@ const thStyle: React.CSSProperties = {
 };
 
 const tdStyle: React.CSSProperties = { padding: '0.5rem 0.8rem' };
+
+const linkStyle: React.CSSProperties = {
+  color: 'rgba(250,250,250,0.35)',
+  textDecoration: 'none',
+  fontSize: '0.9rem',
+};
 
 const delStyle: React.CSSProperties = {
   background: 'transparent',
