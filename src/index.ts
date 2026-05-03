@@ -130,6 +130,11 @@ async function pollLoop(): Promise<never> {
   }
 }
 
+process.on("SIGTERM", () => {
+  console.log("Received SIGTERM, shutting down gracefully.");
+  process.exit(0);
+});
+
 // Entry point
 const isDirectRun =
   process.argv[1] &&
