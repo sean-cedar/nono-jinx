@@ -3,537 +3,227 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="NoJinx — The MLB No-Hitter Jinx Bot">
-  <div class="grain"></div>
-
-  <header class="hero">
-    <div class="hero-inner">
-      <div class="scoreboard">
-        <div class="scoreboard-header">NO-HITTER IN PROGRESS</div>
-        <div class="scoreboard-body">
-          <div class="score-row">
-            <span class="team-label">HITS</span>
-            <span class="score-val zero">0</span>
-          </div>
-        </div>
-        <div class="scoreboard-footer">
-          <span class="blink">●</span> JINX ACTIVE
-        </div>
-      </div>
-
-      <h1 class="title">
-        <span class="title-no">NO</span><span class="title-jinx">JINX</span>
-      </h1>
-      <p class="tagline">The bot that jinxes MLB no-hitters.<br/>Every. Single. Time.</p>
-
-      <a href="https://x.com/NoNoJinx" target="_blank" rel="noopener" class="cta">
-        Follow on <strong>𝕏</strong>
-      </a>
-    </div>
-  </header>
-
-  <section class="how-it-works">
-    <div class="section-inner">
-      <h2 class="section-title">How It Works</h2>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">01</div>
-          <h3>Detect</h3>
-          <p>NoJinx polls every MLB game, every minute. The moment a pitcher has zero hits against? We know.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">02</div>
-          <h3>Jinx</h3>
-          <p>An AI agent crafts the perfect jinx post — calling out the pitcher, the inning, the stakes. Loudly.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">03</div>
-          <h3>Post</h3>
-          <p>Published to 𝕏 in real time. The baseball gods take care of the rest.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="events">
-    <div class="section-inner">
-      <h2 class="section-title">What We Jinx</h2>
-      <div class="event-grid">
-        <div class="event-card">
-          <div class="event-icon">🔥</div>
-          <h3>No-Hitter In Progress</h3>
-          <p>Every inning that passes with zero hits, we get louder.</p>
-        </div>
-        <div class="event-card">
-          <div class="event-icon">💀</div>
-          <h3>No-Hitter Broken</h3>
-          <p>When the first hit finally comes, we take full credit.</p>
-        </div>
-        <div class="event-card">
-          <div class="event-icon">🔄</div>
-          <h3>Pitcher Replaced</h3>
-          <p>New arm, same jinx. Combined no-hitter? We're still watching.</p>
-        </div>
-        <div class="event-card">
-          <div class="event-icon">😤</div>
-          <h3>No-Hitter Complete</h3>
-          <p>If one somehow survives? Grudging respect. Then we reload.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="personality">
-    <div class="section-inner">
-      <div class="quote-block">
-        <blockquote>"Hey Gerrit Cole, heard you've got a no-hitter through 6. That's cute. Would be a real shame if someone... mentioned it."</blockquote>
-        <cite>— NoJinx, probably</cite>
-      </div>
-    </div>
-  </section>
-
-  <section class="tech">
-    <div class="section-inner">
-      <h2 class="section-title">Under the Hood</h2>
-      <div class="tech-grid">
-        <div class="tech-item">
-          <span class="tech-label">Data</span>
-          <span class="tech-value">MLB Stats API</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-label">Brain</span>
-          <span class="tech-value">OpenAI GPT-4o-mini</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-label">Voice</span>
-          <span class="tech-value">𝕏 API v2</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-label">Hosting</span>
-          <span class="tech-value">Railway</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-label">Prompts</span>
-          <span class="tech-value">Markdown + YAML</span>
-        </div>
-        <div class="tech-item">
-          <span class="tech-label">Polling</span>
-          <span class="tech-value">Every 60 seconds</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="site-footer">
-    <div class="section-inner">
-      <p class="footer-text">
-        <span class="footer-logo">NOJINX</span> — Built to break no-hitters since 2026.
+  <main>
+    <section class="hero">
+      <h1>NO<span class="red">JINX</span></h1>
+      <p class="subtitle">Pitcher's got a big butt.</p>
+      <p class="desc">
+        A bot that watches every MLB game, waits for a no-hitter,
+        and immediately tells everyone about it. Because talking about
+        a no-hitter is the fastest way to kill one.
       </p>
-      <p class="footer-links">
-        <a href="https://x.com/NoNoJinx" target="_blank" rel="noopener">𝕏</a>
-        <span class="sep">·</span>
+      <a href="https://x.com/nono_jinx" target="_blank" rel="noopener" class="follow">@nono_jinx on 𝕏</a>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="how">
+      <div class="how-item">
+        <h2>We watch.</h2>
+        <p>Every pitch. Every game. Every day. The moment a pitcher
+        has zero hits allowed, we know about it.</p>
+      </div>
+      <div class="how-item">
+        <h2>We talk.</h2>
+        <p>We post about it. Loudly. By name. "Hey, nice no-hitter
+        you've got going there. Would be a shame if someone... mentioned it."</p>
+      </div>
+      <div class="how-item">
+        <h2>It works.</h2>
+        <p>Every superstitious baseball fan knows: you don't talk about
+        a no-hitter. We do. That's the whole thing.</p>
+      </div>
+    </section>
+
+    <section class="quote">
+      <blockquote>
+        "Did he just say 'funky butt-lovin'?'"
+      </blockquote>
+    </section>
+
+    <section class="what">
+      <h2>What triggers a jinx</h2>
+      <ul>
+        <li><strong>No-hitter in progress</strong> — We call it out every inning. Louder each time.</li>
+        <li><strong>No-hitter broken</strong> — First hit lands. We take full credit.</li>
+        <li><strong>Pitcher replaced</strong> — New arm, same jinx. Combined no-hitter? Still watching.</li>
+        <li><strong>No-hitter survives</strong> — If one actually makes it? Respect. Then we reload.</li>
+      </ul>
+    </section>
+
+    <div class="divider"></div>
+
+    <footer>
+      <span class="footer-mark">NOJINX</span>
+      <nav>
+        <a href="https://x.com/nono_jinx" target="_blank" rel="noopener">𝕏</a>
         <a href="https://github.com/sean-cedar/nono-jinx" target="_blank" rel="noopener">GitHub</a>
-      </p>
-    </div>
-  </footer>
+      </nav>
+    </footer>
+  </main>
 </Layout>
 
 <style>
-  .grain {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  /* ─── HERO ─── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    background:
-      radial-gradient(ellipse at 50% 120%, var(--green-field) 0%, transparent 60%),
-      linear-gradient(175deg, var(--ink) 0%, #2a2218 50%, #1e2a16 100%);
-    color: var(--cream);
-    position: relative;
-    overflow: hidden;
-    padding: 4rem 1.5rem;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(255,255,255,0.015) 2px,
-        rgba(255,255,255,0.015) 4px
-      );
-    pointer-events: none;
-  }
-
-  .hero-inner {
-    position: relative;
-    z-index: 1;
-  }
-
-  .scoreboard {
-    display: inline-block;
-    background: #111;
-    border: 3px solid var(--gold);
-    border-radius: 8px;
-    padding: 0;
-    margin-bottom: 2.5rem;
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    box-shadow:
-      0 0 40px rgba(200, 169, 78, 0.15),
-      inset 0 0 30px rgba(0,0,0,0.5);
-    overflow: hidden;
-    min-width: 280px;
-  }
-
-  .scoreboard-header {
-    background: var(--red);
-    color: var(--cream);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.25em;
-    padding: 0.5rem 1.5rem;
-  }
-
-  .scoreboard-body {
-    padding: 1.5rem 2rem;
-  }
-
-  .score-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-  }
-
-  .team-label {
-    font-size: 1.1rem;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    font-weight: 600;
-  }
-
-  .score-val {
-    font-size: 4.5rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(200, 169, 78, 0.4);
-  }
-
-  .scoreboard-footer {
-    background: #0a0a0a;
-    color: var(--green-field);
-    font-size: 0.7rem;
-    letter-spacing: 0.3em;
-    padding: 0.4rem 1rem;
-    font-weight: 600;
-  }
-
-  .blink {
-    animation: blink 1.2s infinite;
-    margin-right: 0.3rem;
-    color: var(--red);
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-
-  .title {
-    font-family: var(--font-display);
-    font-size: clamp(4rem, 12vw, 9rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 0.9;
-    margin-bottom: 1rem;
-  }
-
-  .title-no {
-    color: var(--cream);
-  }
-
-  .title-jinx {
-    color: var(--red);
-    position: relative;
-  }
-
-  .tagline {
-    font-family: var(--font-body);
-    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-    font-style: italic;
-    opacity: 0.8;
-    margin-bottom: 2.5rem;
-    line-height: 1.5;
-  }
-
-  .cta {
-    display: inline-block;
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    text-decoration: none;
-    color: var(--ink);
-    background: var(--gold);
-    padding: 0.9rem 2.5rem;
-    border-radius: 2px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-
-  .cta:hover {
-    background: var(--cream);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-  }
-
-  /* ─── SECTIONS ─── */
-  .section-inner {
-    max-width: 960px;
+  main {
+    max-width: 640px;
     margin: 0 auto;
     padding: 0 1.5rem;
   }
 
-  .section-title {
+  .red { color: var(--red); }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 6rem 0 3rem;
+  }
+
+  h1 {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 3rem;
-    text-align: center;
-    position: relative;
-  }
-
-  .section-title::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 4px;
-    background: var(--red);
-    margin: 0.75rem auto 0;
-  }
-
-  /* ─── HOW IT WORKS ─── */
-  .how-it-works {
-    padding: 6rem 0;
-    background: var(--cream);
-  }
-
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2.5rem;
-  }
-
-  .step {
-    text-align: center;
-    padding: 2rem 1.5rem;
-  }
-
-  .step-number {
-    font-family: var(--font-display);
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--red);
-    opacity: 0.2;
-    line-height: 1;
+    font-size: clamp(4rem, 15vw, 8rem);
+    line-height: 0.85;
+    letter-spacing: -0.03em;
     margin-bottom: 0.5rem;
   }
 
-  .step h3 {
+  .subtitle {
     font-family: var(--font-display);
-    font-size: 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.75rem;
-  }
-
-  .step p {
-    font-size: 1rem;
-    opacity: 0.75;
-    max-width: 280px;
-    margin: 0 auto;
-  }
-
-  /* ─── EVENTS ─── */
-  .events {
-    padding: 6rem 0;
-    background: var(--ink);
-    color: var(--cream);
-  }
-
-  .events .section-title::after {
-    background: var(--gold);
-  }
-
-  .event-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .event-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
-    padding: 2rem 1.5rem;
-    text-align: center;
-    transition: border-color 0.2s, background 0.2s;
-  }
-
-  .event-card:hover {
-    border-color: var(--gold);
-    background: rgba(200, 169, 78, 0.05);
-  }
-
-  .event-icon {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .event-card h3 {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 3vw, 1.3rem);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    margin-bottom: 0.5rem;
-    color: var(--gold);
+    color: var(--gray);
+    margin-bottom: 2rem;
   }
 
-  .event-card p {
-    font-size: 0.9rem;
-    opacity: 0.65;
-    line-height: 1.5;
+  .desc {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-bottom: 2rem;
+  }
+
+  .follow {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    border: 2px solid var(--black);
+    padding: 0.7rem 1.5rem;
+    transition: all 0.15s;
+  }
+
+  .follow:hover {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: var(--light-gray);
+  }
+
+  /* ─── HOW ─── */
+  .how {
+    padding: 4rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .how-item h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .how-item p {
+    font-size: 1.05rem;
+    color: #444;
+    line-height: 1.6;
   }
 
   /* ─── QUOTE ─── */
-  .personality {
-    padding: 5rem 0;
-    background:
-      linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%);
-    color: var(--cream);
-  }
-
-  .quote-block {
-    text-align: center;
-    max-width: 640px;
-    margin: 0 auto;
+  .quote {
+    padding: 3rem 0;
+    border-top: 1px solid var(--light-gray);
+    border-bottom: 1px solid var(--light-gray);
   }
 
   blockquote {
-    font-family: var(--font-body);
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
-    font-style: italic;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-  }
-
-  cite {
     font-family: var(--font-display);
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    opacity: 0.6;
-    font-style: normal;
-  }
-
-  /* ─── TECH ─── */
-  .tech {
-    padding: 6rem 0;
-    background: var(--chalk);
-  }
-
-  .tech-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1px;
-    background: rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .tech-item {
-    background: var(--chalk);
-    padding: 1.5rem;
-    text-align: center;
-  }
-
-  .tech-label {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.25em;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    line-height: 1.3;
     color: var(--red);
-    margin-bottom: 0.4rem;
-    font-weight: 600;
   }
 
-  .tech-value {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    font-weight: 600;
+  /* ─── WHAT ─── */
+  .what {
+    padding: 4rem 0;
+  }
+
+  .what h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .what ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .what li {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    padding-left: 1.2rem;
+    position: relative;
+    color: #444;
+  }
+
+  .what li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  .what li strong {
+    color: var(--black);
   }
 
   /* ─── FOOTER ─── */
-  .site-footer {
+  footer {
     padding: 3rem 0;
-    background: var(--ink);
-    color: var(--cream);
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--light-gray);
   }
 
-  .footer-logo {
+  .footer-mark {
     font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: var(--gold);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--gray);
   }
 
-  .footer-text {
-    font-size: 0.9rem;
-    opacity: 0.5;
-    margin-bottom: 0.75rem;
+  footer nav {
+    display: flex;
+    gap: 1.5rem;
   }
 
-  .footer-links {
-    font-family: var(--font-display);
+  footer nav a {
     font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-  }
-
-  .footer-links a {
     text-decoration: none;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+    color: var(--gray);
+    transition: color 0.15s;
   }
 
-  .footer-links a:hover {
-    opacity: 1;
-    color: var(--gold);
-  }
-
-  .sep {
-    opacity: 0.3;
-    margin: 0 0.5rem;
+  footer nav a:hover {
+    color: var(--black);
   }
 </style>

@@ -12,7 +12,7 @@ export default function AdminPanel() {
   };
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+    <div style={{ maxWidth: 720, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <TabButton active={tab === 'handles'} onClick={() => setTab('handles')}>
@@ -34,7 +34,6 @@ export default function AdminPanel() {
           valueLabel="X Handle"
           keyPlaceholder="e.g. Gerrit Cole"
           valuePlaceholder="e.g. GerritCole45"
-          commitMessage="Update player X handles"
         />
       )}
       {tab === 'hashtags' && (
@@ -44,7 +43,6 @@ export default function AdminPanel() {
           valueLabel="Hashtag"
           keyPlaceholder="e.g. New York Yankees"
           valuePlaceholder="e.g. #RepBX"
-          commitMessage="Update team hashtags"
         />
       )}
     </div>
@@ -56,19 +54,16 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
     <button
       onClick={onClick}
       style={{
-        fontFamily: "'Oswald', sans-serif",
-        fontSize: '0.85rem',
-        textTransform: 'uppercase' as const,
-        letterSpacing: '0.12em',
-        fontWeight: 600,
-        padding: '0.6rem 1.2rem',
+        fontFamily: "'Archivo Black', Impact, sans-serif",
+        fontSize: '0.75rem',
+        letterSpacing: '0.05em',
+        padding: '0.5rem 1rem',
         border: '1px solid',
-        borderColor: active ? '#c8a94e' : 'rgba(255,255,255,0.12)',
-        borderRadius: 3,
-        background: active ? 'rgba(200,169,78,0.12)' : 'transparent',
-        color: active ? '#c8a94e' : 'rgba(245,240,232,0.5)',
+        borderColor: active ? '#d42b2b' : 'rgba(255,255,255,0.12)',
+        borderRadius: 2,
+        background: active ? 'rgba(212,43,43,0.12)' : 'transparent',
+        color: active ? '#d42b2b' : 'rgba(250,250,250,0.4)',
         cursor: 'pointer',
-        transition: 'all 0.15s',
       }}
     >
       {children}
@@ -77,14 +72,12 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 }
 
 const logoutStyle: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
+  fontFamily: "'DM Sans', system-ui, sans-serif",
   fontSize: '0.75rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.12em',
-  padding: '0.5rem 1rem',
+  padding: '0.4rem 0.8rem',
   background: 'transparent',
-  border: '1px solid rgba(255,255,255,0.15)',
-  borderRadius: 3,
-  color: 'rgba(245,240,232,0.4)',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 2,
+  color: 'rgba(250,250,250,0.3)',
   cursor: 'pointer',
 };

@@ -6,7 +6,6 @@ interface DataTableProps {
   valueLabel: string;
   keyPlaceholder: string;
   valuePlaceholder: string;
-  commitMessage: string;
 }
 
 export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valuePlaceholder }: DataTableProps) {
@@ -50,8 +49,8 @@ export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valu
         const json = await res.json();
         throw new Error(json.error ?? 'Save failed');
       }
-      setSuccess('Saved. The bot will pick up changes within 2 minutes.');
-      await load();
+      setSuccess('Saved. Bot picks up changes within 2 minutes.');
+      setTimeout(() => setSuccess(''), 4000);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -87,53 +86,40 @@ export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valu
   });
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '3rem', opacity: 0.4 }}>Loading...</div>;
+    return <div style={{ padding: '3rem', opacity: 0.3, textAlign: 'center' }}>Loading...</div>;
   }
 
   return (
     <div>
-      {error && <div style={errorStyle}>{error}</div>}
-      {success && <div style={successStyle}>{success}</div>}
+      {error && <div style={msgStyle('#d42b2b')}>{error}</div>}
+      {success && <div style={msgStyle('#2a9d2a')}>{success}</div>}
 
-      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search..."
-          style={{ ...inputStyle, flex: 1 }}
-        />
-      </div>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search..."
+        style={{ ...inputStyle, marginBottom: '1rem' }}
+      />
 
-      <div style={tableWrapStyle}>
-        <table style={tableStyle}>
+      <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
           <thead>
             <tr>
               <th style={thStyle}>{keyLabel}</th>
               <th style={thStyle}>{valueLabel}</th>
-              <th style={{ ...thStyle, width: 60 }}></th>
+              <th style={{ ...thStyle, width: 40 }}></th>
             </tr>
           </thead>
           <tbody>
             {filtered.sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => (
-              <tr key={key} style={trStyle}>
+              <tr key={key} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                 <td style={tdStyle}>{key}</td>
                 <td style={tdStyle}>
-                  <EditableCell
-                    value={value}
-                    onSave={(v) => handleUpdate(key, v)}
-                    disabled={saving}
-                  />
+                  <EditableCell value={value} onSave={(v) => handleUpdate(key, v)} disabled={saving} />
                 </td>
                 <td style={{ ...tdStyle, textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleDelete(key)}
-                    disabled={saving}
-                    style={deleteBtnStyle}
-                    title="Delete"
-                  >
-                    ×
-                  </button>
+                  <button onClick={() => handleDelete(key)} disabled={saving} style={delStyle}>×</button>
                 </td>
               </tr>
             ))}
@@ -141,38 +127,22 @@ export function DataTable({ endpoint, keyLabel, valueLabel, keyPlaceholder, valu
         </table>
       </div>
 
-      <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+      <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
         <div style={{ flex: 1 }}>
           <label style={labelStyle}>{keyLabel}</label>
-          <input
-            type="text"
-            value={newKey}
-            onChange={(e) => setNewKey(e.target.value)}
-            placeholder={keyPlaceholder}
-            style={inputStyle}
-          />
+          <input type="text" value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder={keyPlaceholder} style={inputStyle} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={labelStyle}>{valueLabel}</label>
-          <input
-            type="text"
-            value={newValue}
-            onChange={(e) => setNewValue(e.target.value)}
-            placeholder={valuePlaceholder}
-            style={inputStyle}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          />
+          <input type="text" value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder={valuePlaceholder} style={inputStyle}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()} />
         </div>
-        <button
-          onClick={handleAdd}
-          disabled={saving || !newKey.trim() || !newValue.trim()}
-          style={addBtnStyle}
-        >
+        <button onClick={handleAdd} disabled={saving || !newKey.trim() || !newValue.trim()} style={addStyle}>
           {saving ? '...' : 'Add'}
         </button>
       </div>
 
-      <div style={{ marginTop: '1rem', fontSize: '0.8rem', opacity: 0.35 }}>
+      <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', opacity: 0.25 }}>
         {Object.keys(data).length} entries
       </div>
     </div>
@@ -185,140 +155,90 @@ function EditableCell({ value, onSave, disabled }: { value: string; onSave: (v: 
 
   if (editing) {
     return (
-      <input
-        type="text"
-        value={draft}
+      <input type="text" value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => {
-          if (draft !== value) onSave(draft);
-          setEditing(false);
-        }}
+        onBlur={() => { if (draft !== value) onSave(draft); setEditing(false); }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            if (draft !== value) onSave(draft);
-            setEditing(false);
-          }
-          if (e.key === 'Escape') {
-            setDraft(value);
-            setEditing(false);
-          }
+          if (e.key === 'Enter') { if (draft !== value) onSave(draft); setEditing(false); }
+          if (e.key === 'Escape') { setDraft(value); setEditing(false); }
         }}
-        disabled={disabled}
-        autoFocus
-        style={{ ...inputStyle, padding: '0.3rem 0.5rem', fontSize: '0.9rem', width: '100%' }}
-      />
+        disabled={disabled} autoFocus
+        style={{ ...inputStyle, padding: '0.2rem 0.4rem', fontSize: '0.85rem' }} />
     );
   }
 
   return (
-    <span
-      onClick={() => { setDraft(value); setEditing(true); }}
-      style={{ cursor: 'pointer', borderBottom: '1px dashed rgba(255,255,255,0.2)' }}
-      title="Click to edit"
-    >
+    <span onClick={() => { setDraft(value); setEditing(true); }}
+      style={{ cursor: 'pointer', borderBottom: '1px dashed rgba(255,255,255,0.15)' }} title="Click to edit">
       {value}
     </span>
   );
 }
 
 const inputStyle: React.CSSProperties = {
-  fontFamily: "'Source Serif 4', Georgia, serif",
-  fontSize: '0.95rem',
-  padding: '0.6rem 0.8rem',
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.12)',
-  borderRadius: 3,
-  color: '#f5f0e8',
+  fontFamily: "'DM Sans', system-ui, sans-serif",
+  fontSize: '0.9rem',
+  padding: '0.55rem 0.7rem',
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  borderRadius: 2,
+  color: '#fafafa',
   outline: 'none',
   width: '100%',
 };
 
 const labelStyle: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
   fontSize: '0.65rem',
   textTransform: 'uppercase',
-  letterSpacing: '0.2em',
-  color: 'rgba(245,240,232,0.4)',
+  letterSpacing: '0.15em',
+  color: 'rgba(250,250,250,0.3)',
   display: 'block',
-  marginBottom: '0.3rem',
-};
-
-const tableWrapStyle: React.CSSProperties = {
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: 4,
-  overflow: 'hidden',
-};
-
-const tableStyle: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: '0.9rem',
+  marginBottom: '0.25rem',
 };
 
 const thStyle: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
-  fontSize: '0.7rem',
+  fontSize: '0.65rem',
   textTransform: 'uppercase',
-  letterSpacing: '0.2em',
-  color: '#c8a94e',
+  letterSpacing: '0.15em',
+  color: '#d42b2b',
   textAlign: 'left',
-  padding: '0.75rem 1rem',
-  background: 'rgba(255,255,255,0.03)',
-  borderBottom: '1px solid rgba(255,255,255,0.08)',
-  fontWeight: 600,
+  padding: '0.6rem 0.8rem',
+  background: 'rgba(255,255,255,0.02)',
+  borderBottom: '1px solid rgba(255,255,255,0.06)',
+  fontWeight: 500,
 };
 
-const trStyle: React.CSSProperties = {
-  borderBottom: '1px solid rgba(255,255,255,0.04)',
-};
+const tdStyle: React.CSSProperties = { padding: '0.5rem 0.8rem' };
 
-const tdStyle: React.CSSProperties = {
-  padding: '0.6rem 1rem',
-};
-
-const deleteBtnStyle: React.CSSProperties = {
+const delStyle: React.CSSProperties = {
   background: 'transparent',
   border: 'none',
-  color: 'rgba(196,48,43,0.6)',
-  fontSize: '1.3rem',
+  color: 'rgba(212,43,43,0.5)',
+  fontSize: '1.1rem',
   cursor: 'pointer',
-  lineHeight: 1,
-  padding: '0.2rem 0.5rem',
-  borderRadius: 3,
-  transition: 'color 0.15s',
+  padding: '0 0.3rem',
 };
 
-const addBtnStyle: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
-  fontSize: '0.85rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.1em',
-  fontWeight: 600,
-  padding: '0.6rem 1.5rem',
-  background: '#c8a94e',
-  color: '#1a1410',
+const addStyle: React.CSSProperties = {
+  fontFamily: "'Archivo Black', Impact, sans-serif",
+  fontSize: '0.75rem',
+  padding: '0.55rem 1.2rem',
+  background: '#d42b2b',
+  color: '#fafafa',
   border: 'none',
-  borderRadius: 3,
+  borderRadius: 2,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
 };
 
-const errorStyle: React.CSSProperties = {
-  background: 'rgba(196,48,43,0.15)',
-  border: '1px solid rgba(196,48,43,0.3)',
-  borderRadius: 4,
-  padding: '0.75rem 1rem',
-  marginBottom: '1rem',
-  color: '#e05550',
-  fontSize: '0.9rem',
-};
-
-const successStyle: React.CSSProperties = {
-  background: 'rgba(45,90,39,0.15)',
-  border: '1px solid rgba(45,90,39,0.3)',
-  borderRadius: 4,
-  padding: '0.75rem 1rem',
-  marginBottom: '1rem',
-  color: '#5cb85c',
-  fontSize: '0.9rem',
-};
+function msgStyle(color: string): React.CSSProperties {
+  return {
+    background: `${color}15`,
+    border: `1px solid ${color}30`,
+    borderRadius: 2,
+    padding: '0.6rem 0.8rem',
+    marginBottom: '0.75rem',
+    color,
+    fontSize: '0.85rem',
+  };
+}
