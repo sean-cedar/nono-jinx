@@ -51,7 +51,9 @@ export async function getBoxscore(gamePk: number): Promise<BoxscoreResponse> {
 }
 
 export function todayDateString(): string {
-  const now = new Date();
+  const now = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
+  );
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
