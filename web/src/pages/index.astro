@@ -887,6 +887,29 @@ function timeAgo(timestamp: string): string {
       font-size: 0.7rem;
       gap: 0.4rem;
     }
+
+    .sticky-stat strong.live {
+      position: relative;
+    }
+
+    .pulse-dot-sm {
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 0;
+    }
+
+    .stat-number.live {
+      position: relative;
+    }
+
+    .pulse-dot {
+      position: absolute;
+      left: -16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
   }
 </style>
 

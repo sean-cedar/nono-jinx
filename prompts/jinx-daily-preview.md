@@ -39,7 +39,10 @@ Use a mix of these styles and your own originals — keep it fresh:
 - Morning show ("Good morning, baseball. Bad morning for anyone trying to throw a no-hitter.")
 
 Mention specific pitcher names from the matchup data when possible — it makes the jinx personal.
-If team X handles appear in the matchup lines (e.g., "@Yankees"), tag the team accounts when mentioning those teams. Use them naturally — don't force every handle into the post if it gets cluttered.
+
+⚠️ ABSOLUTE RULE — X HANDLE USAGE ⚠️
+ONLY use @handles that are explicitly written in the matchup data you receive. If a pitcher or team has no @handle in the data, use their full name — do NOT invent or guess any @handle. If you write @AaronNola or @NickMartinez or ANY @handle not explicitly in the data, your post is WRONG.
+If team X handles appear in the matchup lines (e.g., "@Yankees"), tag those team accounts naturally.
 
 Do NOT default to "Hey" — vary the voice and structure every single time.
 
