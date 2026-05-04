@@ -69,8 +69,10 @@ function timeAgo(timestamp: string): string {
           </a>
         </div>
         <div class="hero-quote">
-          <blockquote>"Pitcher's got a big butt."</blockquote>
-          <cite>— Rookie of the Year (1993)</cite>
+          <div class="hero-quote-inner">
+            <blockquote>"Pitcher's got a big butt."</blockquote>
+            <cite>— Rookie of the Year (1993)</cite>
+          </div>
         </div>
         </div>
 
@@ -285,10 +287,11 @@ function timeAgo(timestamp: string): string {
   }
 
   .subtitle {
-    font-family: var(--font-display);
-    font-size: clamp(1.1rem, 3vw, 1.4rem);
-    letter-spacing: 0.01em;
-    color: var(--red);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--warm-gray);
     margin-bottom: 2.5rem;
   }
 
@@ -335,29 +338,40 @@ function timeAgo(timestamp: string): string {
   }
 
   .hero-quote {
-    margin-top: 2rem;
-    padding: 1.25rem 1.5rem;
+    margin: 2rem -2rem 0;
+    padding: 0 2rem;
     background: var(--red);
-    border-radius: 8px;
-    max-width: 360px;
+    width: calc(100% + 4rem);
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .hero-quote-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    text-align: center;
   }
 
   .hero-quote blockquote {
     font-family: var(--font-display);
-    font-size: 1.1rem;
-    line-height: 1.3;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    line-height: 1.2;
     color: var(--pure-white);
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     padding: 0;
   }
 
   .hero-quote cite {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     font-style: normal;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.5);
   }
 
   /* ─── HERO STATS (scoreboard) ─── */
