@@ -48,7 +48,7 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
             inning: isAllJinxed ? "End of Day" : `${event.inningHalf} ${event.inningOrdinal}`,
             tweetText: result.text ?? "",
           });
-          if (event.type === "no_hitter_broken" || event.type === "perfect_game_broken") {
+          if (event.type === "no_hitter_broken") {
             await incrementJinxCount();
           } else if (event.type === "no_hitter_complete" || event.type === "perfect_game_complete") {
             await incrementCompletedCount();

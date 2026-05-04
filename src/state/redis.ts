@@ -103,8 +103,8 @@ export async function hasPosted(eventKey: string): Promise<boolean> {
   return val !== null;
 }
 
-export async function markPosted(eventKey: string): Promise<void> {
+export async function markPosted(eventKey: string, ttl?: number): Promise<void> {
   if (!hasRedisConfig()) return;
   const redis = await getRedis();
-  await redis.set(`nonojinx:posted:${eventKey}`, "1", { ex: DEDUP_TTL });
+  await redis.set(`nonojinx:posted:${eventKey}`, "1", { ex: ttl ?? DEDUP_TTL });
 }

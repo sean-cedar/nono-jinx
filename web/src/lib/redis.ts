@@ -51,15 +51,26 @@ export async function getPostHistory(limit = 10): Promise<PostHistoryEntry[]> {
   return raw.map((item) => typeof item === "string" ? JSON.parse(item) : item as unknown as PostHistoryEntry);
 }
 
-export async function getStats(): Promise<{ jinxed: number; completed: number; jinxRate: number }> {
+export async function getActiveNoHitterCount(): Promise<number> {
   const redis = getRedis();
-  const [jinxed, completed] = await Promise.all([
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const key = `nonojinx:${dateStr}`;
+  const data = await redis.get<Record<string, unknown>>(key);
+  if (!data || typeof data !== "object") return 0;
+  return Object.keys(data).length;
+}
+
+export async function getStats(): Promise<{ jinxed: number; completed: number; jinxRate: number; inProgress: number }> {
+  const redis = getRedis();
+  const [jinxed, completed, inProgress] = await Promise.all([
     redis.get<number>(STATS_JINXED_KEY),
     redis.get<number>(STATS_COMPLETED_KEY),
+    getActiveNoHitterCount(),
   ]);
   const j = jinxed ?? 0;
   const c = completed ?? 0;
   const total = j + c;
   const jinxRate = total > 0 ? Math.round((j / total) * 100) : 0;
-  return { jinxed: j, completed: c, jinxRate };
+  return { jinxed: j, completed: c, jinxRate, inProgress };
 }

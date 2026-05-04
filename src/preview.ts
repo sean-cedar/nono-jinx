@@ -72,7 +72,7 @@ export async function checkDailyPreview(date: string): Promise<boolean> {
   const lines: string[] = [
     `Event: daily_preview`,
     `Date: ${formatDateLabel(date)}`,
-    `Games Today: ${games.length}`,
+    `Games Today: ${games.length} (${games.length * 2} pitchers = ${games.length * 2} chances to jinx)`,
     "",
   ];
 
@@ -108,7 +108,7 @@ export async function checkDailyPreview(date: string): Promise<boolean> {
 
     if (result.posted) {
       console.log(`Daily preview posted: "${result.text}"`);
-      await markPosted(dedupKey);
+      await markPosted(dedupKey, 24 * 60 * 60);
 
       if (hasRedisConfig()) {
         try {
