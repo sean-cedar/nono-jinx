@@ -75,7 +75,7 @@ function timeAgo(timestamp: string): string {
         {(stats.jinxed > 0 || stats.completed > 0) && (
           <div class="hero-stats" id="heroStats">
             <div class="stat stat-live">
-              <span class="stat-number live">{stats.inProgress}<span class="pulse-dot" aria-hidden="true"></span></span>
+              <span class="stat-number live"><span class="pulse-dot" aria-hidden="true"></span>{stats.inProgress}</span>
               <span class="stat-label">In Progress</span>
             </div>
             <div class="stat">
@@ -388,7 +388,8 @@ function timeAgo(timestamp: string): string {
   .pulse-dot {
     position: absolute;
     top: 50%;
-    margin-left: 0.3rem;
+    right: 100%;
+    margin-right: 0.4rem;
     transform: translateY(-50%);
     width: 10px;
     height: 10px;
