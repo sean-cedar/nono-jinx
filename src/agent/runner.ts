@@ -15,6 +15,24 @@ let teamHashtags: Record<string, string> | null = null;
 let hashtagsLoadedAt = 0;
 const CACHE_TTL_MS = 120_000;
 
+let teamXHandles: Record<string, string> | null = null;
+
+function loadTeamHandles(): Record<string, string> {
+  if (teamXHandles) return teamXHandles;
+  try {
+    const raw = readFileSync(resolve(__dirname, "../../data/team-x-handles.json"), "utf-8");
+    teamXHandles = JSON.parse(raw);
+    return teamXHandles!;
+  } catch {
+    return {};
+  }
+}
+
+function getTeamHandle(teamName: string): string | null {
+  const handles = loadTeamHandles();
+  return handles[teamName] ?? null;
+}
+
 function loadHashtagsFromFile(): Record<string, string> {
   try {
     const raw = readFileSync(resolve(__dirname, "../../data/team-hashtags.json"), "utf-8");
@@ -103,6 +121,11 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
   if (starterHandle && event.startingPitcherName !== event.pitcherName) {
     lines.push(`Starting Pitcher X Handle: @${starterHandle}`);
   }
+
+  const pitchingHandle = getTeamHandle(event.pitchingTeam);
+  const battingHandle = getTeamHandle(event.battingTeam);
+  if (pitchingHandle) lines.push(`Pitching Team X Handle: @${pitchingHandle}`);
+  if (battingHandle) lines.push(`Batting Team X Handle: @${battingHandle}`);
 
   const pitchingTag = await getTeamHashtag(event.pitchingTeam);
   const battingTag = await getTeamHashtag(event.battingTeam);

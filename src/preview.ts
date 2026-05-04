@@ -1,8 +1,31 @@
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { getScheduleWithPitchers } from "./mlb/client.js";
 import { loadPrompt } from "./agent/prompt-loader.js";
 import { runAgentWithMessage } from "./agent/runner.js";
 import { hasPosted, markPosted, logPost, hasRedisConfig } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+let teamXHandles: Record<string, string> | null = null;
+
+function loadTeamHandles(): Record<string, string> {
+  if (teamXHandles) return teamXHandles;
+  try {
+    const raw = readFileSync(resolve(__dirname, "../data/team-x-handles.json"), "utf-8");
+    teamXHandles = JSON.parse(raw);
+    return teamXHandles!;
+  } catch {
+    return {};
+  }
+}
+
+function getTeamHandle(teamName: string): string | null {
+  const handles = loadTeamHandles();
+  return handles[teamName] ?? null;
+}
 
 function etNow(): Date {
   return new Date(
@@ -59,8 +82,14 @@ export async function checkDailyPreview(date: string): Promise<boolean> {
     const homePitcher =
       game.teams.home.probablePitcher?.fullName ?? "TBD";
     const time = formatGameTime(game.gameDate);
+    const awayName = game.teams.away.team.name;
+    const homeName = game.teams.home.team.name;
+    const awayHandle = getTeamHandle(awayName);
+    const homeHandle = getTeamHandle(homeName);
+    const awayLabel = awayHandle ? `${awayName} (@${awayHandle})` : awayName;
+    const homeLabel = homeHandle ? `${homeName} (@${homeHandle})` : homeName;
     lines.push(
-      `${i + 1}. ${game.teams.away.team.name} (${awayPitcher}) @ ${game.teams.home.team.name} (${homePitcher}) — ${time} ET`,
+      `${i + 1}. ${awayLabel} (${awayPitcher}) @ ${homeLabel} (${homePitcher}) — ${time} ET`,
     );
   });
 

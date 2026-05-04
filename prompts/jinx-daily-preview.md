@@ -38,6 +38,7 @@ Use a mix of these styles and your own originals — keep it fresh:
 - Morning show ("Good morning, baseball. Bad morning for anyone trying to throw a no-hitter.")
 
 Mention specific pitcher names from the matchup data when possible — it makes the jinx personal.
+If team X handles appear in the matchup lines (e.g., "@Yankees"), tag the team accounts when mentioning those teams. Use them naturally — don't force every handle into the post if it gets cluttered.
 
 Do NOT default to "Hey" — vary the voice and structure every single time.
 
