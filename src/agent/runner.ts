@@ -101,7 +101,7 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
     `Starting Pitcher: ${event.startingPitcherName}`,
     `Pitching Team: ${event.pitchingTeam}`,
     `Batting Team: ${event.battingTeam}`,
-    `Inning: ${event.inningHalf} of the ${event.inningOrdinal}`,
+    `No-Hit Innings Completed: ${event.inning} (through ${event.inningOrdinal})`,
     `Perfect Game: ${event.isPerfectGame ? "Yes" : "No"}`,
     `Combined No-Hitter: ${event.isCombinedNoHitter ? "Yes" : "No"}`,
     `Pitchers Used: ${event.pitcherCount}`,
