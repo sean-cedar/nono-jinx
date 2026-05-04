@@ -814,10 +814,9 @@ function timeAgo(timestamp: string): string {
     }
 
     .hero-stats {
-      flex-direction: row;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 2rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
       margin-top: 2rem;
       padding-top: 1.5rem;
       border-left: none;
@@ -890,14 +889,17 @@ function timeAgo(timestamp: string): string {
 
     .sticky-stat strong.live {
       position: relative;
+      padding-left: 10px;
     }
 
     .pulse-dot-sm {
       position: absolute;
-      left: -10px;
+      left: 0;
       top: 50%;
       transform: translateY(-50%);
       margin-left: 0;
+      width: 5px;
+      height: 5px;
     }
 
     .stat-number.live {
@@ -906,9 +908,11 @@ function timeAgo(timestamp: string): string {
 
     .pulse-dot {
       position: absolute;
-      left: -16px;
+      right: calc(100% + 3px);
       top: 50%;
       transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
     }
   }
 </style>
