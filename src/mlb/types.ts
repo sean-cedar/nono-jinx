@@ -147,6 +147,28 @@ export interface BoxscorePlayer {
   };
 }
 
+// Play-by-play (minimal typing for breakup hit detection)
+
+export interface PlayByPlayResponse {
+  allPlays: PlayByPlayEntry[];
+}
+
+export interface PlayByPlayEntry {
+  result: {
+    type: string;
+    event: string;
+    description: string;
+  };
+  matchup: {
+    batter: { fullName: string };
+  };
+  about: {
+    halfInning: "top" | "bottom";
+    inning: number;
+    isComplete: boolean;
+  };
+}
+
 // Internal event types
 
 export type NoHitterEventType =
@@ -175,6 +197,9 @@ export interface NoHitterEvent {
   pitchCount?: number;
   strikeouts?: number;
   gameDate: string;
+  breakupBatter?: string;
+  breakupPlay?: string;
+  breakupDescription?: string;
 }
 
 export interface NoHitterState {

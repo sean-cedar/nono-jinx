@@ -4,8 +4,9 @@ import type {
   BoxscoreResponse,
   NoHitterEvent,
   NoHitterState,
+  PlayByPlayEntry,
 } from "./types.js";
-import { getLinescore, getBoxscore } from "./client.js";
+import { getLinescore, getBoxscore, getPlayByPlay } from "./client.js";
 
 const MIN_INNING = parseInt(process.env.MIN_INNING_THRESHOLD ?? "1", 10);
 
@@ -87,6 +88,37 @@ function completedHalfInnings(
     // team hasn't finished batting in the current inning.
     return inningState === "End" ? currentInning : currentInning - 1;
   }
+}
+
+const HIT_EVENTS = new Set(["Single", "Double", "Triple", "Home Run"]);
+
+/**
+ * Find the first hit by the batting side in the play-by-play data.
+ * pitchingSide refers to the state key side (the team pitching the no-hitter).
+ * If pitchingSide is "home", the batting side bats in the "top" half.
+ * If pitchingSide is "away", the batting side bats in the "bottom" half.
+ * Searches in reverse to find the most recent hit.
+ */
+function findBreakupHit(
+  plays: PlayByPlayEntry[],
+  pitchingSide: "home" | "away",
+): { batter: string; event: string; description: string } | null {
+  const battingHalf = pitchingSide === "home" ? "top" : "bottom";
+  for (let i = plays.length - 1; i >= 0; i--) {
+    const play = plays[i];
+    if (
+      play.about.halfInning === battingHalf &&
+      play.about.isComplete &&
+      HIT_EVENTS.has(play.result.event)
+    ) {
+      return {
+        batter: play.matchup.batter.fullName,
+        event: play.result.event,
+        description: play.result.description,
+      };
+    }
+  }
+  return null;
 }
 
 /**
@@ -276,19 +308,26 @@ export async function detectNoHitters(
 
     if (liveGamePks.has(gamePk)) {
       // Game is still live but no-hitter is gone -- broken up
+      const overrides: Partial<NoHitterEvent> = { isPerfectGame: false };
       try {
         const linescore = await getLinescore(gamePk);
-        events.push(
-          makeEvent("no_hitter_broken", state, {
-            inning: linescore.currentInning,
-            inningOrdinal: linescore.currentInningOrdinal,
-            inningHalf: linescore.inningHalf,
-            isPerfectGame: false,
-          }),
-        );
-      } catch {
-        events.push(makeEvent("no_hitter_broken", state, { isPerfectGame: false }));
-      }
+        overrides.inning = linescore.currentInning;
+        overrides.inningOrdinal = linescore.currentInningOrdinal;
+        overrides.inningHalf = linescore.inningHalf;
+      } catch { /* use defaults from state */ }
+
+      try {
+        const pitchingSide = key.split("-")[1] as "home" | "away";
+        const pbp = await getPlayByPlay(gamePk);
+        const hit = findBreakupHit(pbp.allPlays, pitchingSide);
+        if (hit) {
+          overrides.breakupBatter = hit.batter;
+          overrides.breakupPlay = hit.event;
+          overrides.breakupDescription = hit.description;
+        }
+      } catch { /* best-effort — still emit event without breakup details */ }
+
+      events.push(makeEvent("no_hitter_broken", state, overrides));
     }
 
     const finishedGame = finishedGames.find((g) => g.gamePk === gamePk);

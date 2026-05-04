@@ -90,6 +90,12 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
   ];
   if (event.pitchCount !== undefined) lines.push(`Pitch Count: ${event.pitchCount}`);
   if (event.strikeouts !== undefined) lines.push(`Strikeouts: ${event.strikeouts}`);
+  if (event.breakupBatter && event.breakupPlay) {
+    lines.push(`Breakup Hit: ${event.breakupPlay} by ${event.breakupBatter}`);
+  }
+  if (event.breakupDescription) {
+    lines.push(`Play Description: ${event.breakupDescription}`);
+  }
 
   const currentHandle = await getHandle(event.pitcherName);
   const starterHandle = await getHandle(event.startingPitcherName);

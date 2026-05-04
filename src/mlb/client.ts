@@ -3,6 +3,7 @@ import type {
   ScheduleGame,
   LinescoreResponse,
   BoxscoreResponse,
+  PlayByPlayResponse,
 } from "./types.js";
 
 const BASE_URL = "https://statsapi.mlb.com";
@@ -48,6 +49,11 @@ export async function getLinescore(gamePk: number): Promise<LinescoreResponse> {
 export async function getBoxscore(gamePk: number): Promise<BoxscoreResponse> {
   const url = `${BASE_URL}/api/v1/game/${gamePk}/boxscore`;
   return fetchJson<BoxscoreResponse>(url);
+}
+
+export async function getPlayByPlay(gamePk: number): Promise<PlayByPlayResponse> {
+  const url = `${BASE_URL}/api/v1/game/${gamePk}/playByPlay`;
+  return fetchJson<PlayByPlayResponse>(url);
 }
 
 export function todayDateString(): string {
