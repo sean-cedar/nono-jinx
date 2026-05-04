@@ -57,11 +57,11 @@ function timeAgo(timestamp: string): string {
         <div class="hero-content">
           <h1>NO NO<br/><span class="red">JINX</span></h1>
           <p class="subtitle">Pitcher's got a big butt.</p>
-          <p class="desc">
-            An AI agent that watches every MLB game, waits for a no-hitter,
-            and immediately tells everyone about it. Because talking about
-            a no-hitter is the fastest way to kill one.
-          </p>
+        <p class="desc">
+          An AI agent that watches <strong>every MLB game</strong>, waits for a no-hitter,
+          and immediately <em class="red-em">tells everyone about it</em>. Because talking about
+          a no-hitter is the fastest way to <strong class="red-em">kill one</strong>.
+        </p>
           <div class="hero-actions">
             <a href="https://x.com/nono_jinx" target="_blank" rel="noopener" class="follow">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -224,6 +224,11 @@ function timeAgo(timestamp: string): string {
   }
 
   .red { color: var(--red); }
+
+  .red-em {
+    color: var(--red);
+    font-style: normal;
+  }
 
   .section-label {
     display: block;
