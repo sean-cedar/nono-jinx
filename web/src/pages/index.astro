@@ -383,13 +383,13 @@ function timeAgo(timestamp: string): string {
   .stat-number.live {
     color: #16a34a;
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
   }
 
   .pulse-dot {
-    display: inline-block;
+    position: absolute;
+    top: 50%;
+    margin-left: 0.3rem;
+    transform: translateY(-50%);
     width: 10px;
     height: 10px;
     background: #16a34a;
