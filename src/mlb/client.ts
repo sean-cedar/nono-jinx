@@ -56,6 +56,13 @@ export async function getPlayByPlay(gamePk: number): Promise<PlayByPlayResponse>
   return fetchJson<PlayByPlayResponse>(url);
 }
 
+export async function getScheduleWithPitchers(date: string): Promise<ScheduleGame[]> {
+  const url = `${BASE_URL}/api/v1/schedule?sportId=1&date=${date}&hydrate=probablePitcher(note)`;
+  const data = await fetchJson<ScheduleResponse>(url);
+  if (!data.dates || data.dates.length === 0) return [];
+  return data.dates[0].games;
+}
+
 export function todayDateString(): string {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),

@@ -114,16 +114,16 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
 
 const MAX_TOOL_ROUNDS = 3;
 
-export async function runAgent(
+export async function runAgentWithMessage(
   prompt: PromptConfig,
-  event: NoHitterEvent,
+  userMessage: string,
 ): Promise<{ posted: boolean; text?: string }> {
   const openai = getOpenAI();
   const tools = buildToolDefs(prompt);
 
   const messages: ChatCompletionMessageParam[] = [
     { role: "system", content: prompt.systemPrompt },
-    { role: "user", content: await buildUserMessage(event) },
+    { role: "user", content: userMessage },
   ];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -169,4 +169,11 @@ export async function runAgent(
 
   console.warn("Agent exhausted tool rounds without posting");
   return { posted: false };
+}
+
+export async function runAgent(
+  prompt: PromptConfig,
+  event: NoHitterEvent,
+): Promise<{ posted: boolean; text?: string }> {
+  return runAgentWithMessage(prompt, await buildUserMessage(event));
 }

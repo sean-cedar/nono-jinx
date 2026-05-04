@@ -28,6 +28,7 @@ export interface GameStatus {
 export interface ScheduleTeamInfo {
   team: { id: number; name: string };
   score?: number;
+  probablePitcher?: PlayerRef;
 }
 
 // Linescore
@@ -179,7 +180,8 @@ export type NoHitterEventType =
   | "perfect_game_complete"
   | "perfect_game_broken"
   | "pitcher_replaced"
-  | "all_jinxed";
+  | "all_jinxed"
+  | "daily_preview";
 
 export interface NoHitterEvent {
   type: NoHitterEventType;

@@ -10,6 +10,7 @@ import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedu
 import { hasRedisConfig, logPost, hasPosted, markPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
 import type { NoHitterEvent } from "./mlb/types.js";
+import { checkDailyPreview } from "./preview.js";
 
 const store = createStore();
 const startedAt = new Date();
@@ -75,6 +76,8 @@ export async function handler(): Promise<{
 }> {
   const date = todayDateString();
   console.log(`NoJinx polling for ${date}`);
+
+  await checkDailyPreview(date);
 
   if (!(await hasGamesToday())) {
     console.log("No games today. Exiting.");
