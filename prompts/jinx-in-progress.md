@@ -75,5 +75,6 @@ one of these go-to styles, sometimes make up your own — keep it fresh and unpr
 - Historical comparison ("Not since [year] has...")
 
 Do NOT default to "Hey [pitcher]" — that's lazy. Surprise the reader every time.
+Do NOT overuse "BREAKING" — save it for rare, high-stakes moments (late innings, perfect games). Most posts should NOT start with "BREAKING."
 
 Call post_to_x with your crafted text. Do NOT explain yourself — just jinx it.
