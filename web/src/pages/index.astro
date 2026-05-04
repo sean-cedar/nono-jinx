@@ -673,18 +673,32 @@ function timeAgo(timestamp: string): string {
     left: 0;
     right: 0;
     z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(248, 246, 243, 0.8);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  .sticky-bar.visible {
+  /* Option C: fade */
+  .sticky-bar.mode-fade {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sticky-bar.mode-fade.visible {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  /* Option A: slide */
+  .sticky-bar.mode-slide {
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sticky-bar.mode-slide.visible {
+    transform: translateY(0);
   }
 
   .sticky-inner {
@@ -823,16 +837,30 @@ function timeAgo(timestamp: string): string {
   const stickyBar = document.getElementById('stickyBar');
 
   if (heroStats && stickyBar) {
-    const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+    const params = new URLSearchParams(window.location.search);
+    const useSlide = params.get('style') === 'a';
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const ratio = entry.intersectionRatio;
-        heroStats.style.opacity = String(Math.max(ratio, 0.15));
-        stickyBar.classList.toggle('visible', ratio < 0.3);
-      },
-      { threshold: thresholds }
-    );
-    observer.observe(heroStats);
+    stickyBar.classList.add(useSlide ? 'mode-slide' : 'mode-fade');
+
+    if (useSlide) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          stickyBar.classList.toggle('visible', !entry.isIntersecting);
+        },
+        { threshold: 0 }
+      );
+      observer.observe(heroStats);
+    } else {
+      const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          const ratio = entry.intersectionRatio;
+          heroStats.style.opacity = String(Math.max(ratio, 0.15));
+          stickyBar.classList.toggle('visible', ratio < 0.3);
+        },
+        { threshold: thresholds }
+      );
+      observer.observe(heroStats);
+    }
   }
 </script>
