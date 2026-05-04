@@ -329,6 +329,7 @@ function timeAgo(timestamp: string): string {
     margin-top: 2rem;
     padding-top: 2rem;
     border-top: 1px solid var(--light-gray);
+    transition: opacity 0.15s ease-out;
   }
 
   .stat {
@@ -668,16 +669,18 @@ function timeAgo(timestamp: string): string {
     left: 0;
     right: 0;
     z-index: 100;
-    transform: translateY(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(248, 246, 243, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(248, 246, 243, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .sticky-bar.visible {
-    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .sticky-inner {
@@ -812,15 +815,19 @@ function timeAgo(timestamp: string): string {
 </style>
 
 <script>
-  const heroStats = document.querySelector('.hero-stats');
+  const heroStats = document.querySelector('.hero-stats') as HTMLElement | null;
   const stickyBar = document.getElementById('stickyBar');
 
   if (heroStats && stickyBar) {
+    const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        stickyBar.classList.toggle('visible', !entry.isIntersecting);
+        const ratio = entry.intersectionRatio;
+        heroStats.style.opacity = String(Math.max(ratio, 0.15));
+        stickyBar.classList.toggle('visible', ratio < 0.3);
       },
-      { threshold: 0, rootMargin: '0px' }
+      { threshold: thresholds }
     );
     observer.observe(heroStats);
   }
