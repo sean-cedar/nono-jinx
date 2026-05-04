@@ -382,19 +382,18 @@ function timeAgo(timestamp: string): string {
 
   .stat-number.live {
     color: #16a34a;
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
   }
 
   .pulse-dot {
-    position: absolute;
-    top: 50%;
-    right: 100%;
-    margin-right: 0.4rem;
-    transform: translateY(-50%);
     width: 10px;
     height: 10px;
     background: #16a34a;
     border-radius: 50%;
+    flex-shrink: 0;
     animation: pulse 2s ease-in-out infinite;
   }
 
