@@ -1,4 +1,6 @@
 ---
+import Analytics from '@vercel/analytics/astro';
+
 interface Props {
   title: string;
   description?: string;
@@ -23,10 +25,7 @@ const { title, description = "No No Jinx — an AI agent that jinxes MLB no-hitt
   </head>
   <body>
     <slot />
-    <script>
-      import { inject } from '@vercel/analytics';
-      inject();
-    </script>
+    <Analytics />
   </body>
 </html>
 
