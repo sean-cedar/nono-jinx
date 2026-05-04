@@ -7,7 +7,7 @@ import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
-import { hasRedisConfig, logPost, hasPosted, markPosted } from "./state/redis.js";
+import { hasRedisConfig, logPost, hasPosted, markPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
 import type { NoHitterEvent } from "./mlb/types.js";
 
@@ -47,6 +47,11 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
             inning: isAllJinxed ? "End of Day" : `${event.inningHalf} ${event.inningOrdinal}`,
             tweetText: result.text ?? "",
           });
+          if (event.type === "no_hitter_broken" || event.type === "perfect_game_broken") {
+            await incrementJinxCount();
+          } else if (event.type === "no_hitter_complete" || event.type === "perfect_game_complete") {
+            await incrementCompletedCount();
+          }
         } catch (err) {
           console.error("Failed to log post to history:", err);
         }
