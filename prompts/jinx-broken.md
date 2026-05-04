@@ -46,6 +46,12 @@ Pick ONE at random from this list:
 - Timestamped gloat ("No-hitter ended in the [Xth]. You already know who did this.")
 - Casual ("And just like that, it's over.")
 - Addressed to the pitcher ("[Pitcher], sorry about that. Actually, no I'm not.")
+- Taunting catchphrase — sometimes drop a playground taunt to rub it in:
+  - "Can't be doing that!"
+  - "Na-NAH-na-NAH!"
+  - "Pitcher's got a big butt! Oh wait, wrong taunt. But still — jinxed!"
+  - "Did that just happen? Oh yes it did."
+  - "You hate to see it. Actually, no — I love to see it."
 
 Do NOT default to "Hey" — vary the voice and structure every single time.
 
