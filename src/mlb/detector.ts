@@ -74,23 +74,18 @@ function completedHalfInnings(
   linescore: LinescoreResponse,
   battingSide: "home" | "away",
 ): number {
-  const { innings, inningState } = linescore;
-  if (!innings || innings.length === 0) return 0;
+  const { currentInning, inningState } = linescore;
+  if (!currentInning) return 0;
 
   if (battingSide === "away") {
-    let count = 0;
-    for (const inn of innings) {
-      if (inn.away.hits !== undefined) count++;
-    }
-    if (inningState === "Top") count = Math.max(0, count - 1);
-    return count;
+    // Away bats in the top half. During "Top" they're still batting,
+    // so subtract 1. At any other state the top half is done.
+    return inningState === "Top" ? currentInning - 1 : currentInning;
   } else {
-    let count = 0;
-    for (const inn of innings) {
-      if (inn.home.hits !== undefined) count++;
-    }
-    if (inningState === "Bottom") count = Math.max(0, count - 1);
-    return count;
+    // Home bats in the bottom half. Only at "End" is the bottom
+    // half complete. During "Top", "Middle", or "Bottom" the home
+    // team hasn't finished batting in the current inning.
+    return inningState === "End" ? currentInning : currentInning - 1;
   }
 }
 
