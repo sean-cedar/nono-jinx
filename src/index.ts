@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { createServer } from "node:http";
 import { getLiveGames, getFinishedGames, getSchedule, todayDateString } from "./mlb/client.js";
+import type { ScheduleGame } from "./mlb/types.js";
 import { detectNoHitters } from "./mlb/detector.js";
 import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
@@ -75,10 +76,12 @@ export async function handler(): Promise<{
     return { eventsDetected: 0, eventsPosted: 0 };
   }
 
-  const [liveGames, finishedGames] = await Promise.all([
-    getLiveGames(date),
-    getFinishedGames(date),
-  ]);
+  const allGames: ScheduleGame[] = await getSchedule(date);
+  const liveGames = allGames.filter(
+    (g) => g.status.abstractGameState === "Live" &&
+      !new Set(["Pre-Game", "Warmup", "Delayed Start", "Delayed", "Scheduled"]).has(g.status.detailedState),
+  );
+  const finishedGames = allGames.filter((g) => g.status.abstractGameState === "Final");
 
   console.log(`Live games: ${liveGames.length}, Finished games: ${finishedGames.length}`);
 
@@ -88,7 +91,7 @@ export async function handler(): Promise<{
   }
 
   const currentState = await store.load();
-  const { events, updatedState } = await detectNoHitters(liveGames, finishedGames, currentState);
+  const { events, updatedState } = await detectNoHitters(liveGames, finishedGames, currentState, allGames);
 
   console.log(`Detected ${events.length} event(s)`);
 

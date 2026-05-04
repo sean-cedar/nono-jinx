@@ -194,6 +194,7 @@ export async function detectNoHitters(
   liveGames: ScheduleGame[],
   finishedGames: ScheduleGame[],
   currentState: Record<string, NoHitterState>,
+  allGames?: ScheduleGame[],
 ): Promise<DetectionResult> {
   const events: NoHitterEvent[] = [];
   const updatedState: Record<string, NoHitterState> = {};
@@ -317,16 +318,20 @@ export async function detectNoHitters(
     // Either way, remove from updated state (game over or broken)
   }
 
-  // Emit all_jinxed when the last active no-hitter(s) of the day are all gone,
-  // at least one was broken this cycle, and none were completed (successful jinx day).
+  // Emit all_jinxed when every tracked no-hitter is gone, at least one was
+  // broken this cycle, none were completed, AND no games are still waiting to
+  // start (so we don't celebrate prematurely between game slots).
   const hadActiveNoHitters = Object.keys(currentState).length > 0;
   const noneRemaining = Object.keys(updatedState).length === 0;
   const brokenThisCycle = events.some((e) => e.type === "no_hitter_broken");
   const anyCompleted = events.some(
     (e) => e.type === "no_hitter_complete" || e.type === "perfect_game_complete",
   );
+  const gamesYetToStart = allGames
+    ? allGames.some((g) => g.status.abstractGameState === "Preview")
+    : false;
 
-  if (hadActiveNoHitters && noneRemaining && brokenThisCycle && !anyCompleted) {
+  if (hadActiveNoHitters && noneRemaining && brokenThisCycle && !anyCompleted && !gamesYetToStart) {
     events.push({
       type: "all_jinxed",
       gamePk: 0,
