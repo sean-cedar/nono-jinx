@@ -22,7 +22,11 @@ async function hasGamesToday(): Promise<boolean> {
 }
 
 async function processEvent(event: NoHitterEvent): Promise<boolean> {
-  console.log(`Processing event: ${event.type} — ${event.pitcherName} (${event.pitchingTeam} vs ${event.battingTeam}), ${event.inningHalf} ${event.inningOrdinal}`);
+  const isAllJinxed = event.type === "all_jinxed";
+  const label = isAllJinxed
+    ? "Processing event: all_jinxed — end of day celebration"
+    : `Processing event: ${event.type} — ${event.pitcherName} (${event.pitchingTeam} vs ${event.battingTeam}), ${event.inningHalf} ${event.inningOrdinal}`;
+  console.log(label);
 
   try {
     const prompt = loadPromptForEvent(event.type);
@@ -30,23 +34,23 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
 
     if (result.posted) {
       console.log(`Posted: "${result.text}"`);
-      const teams = `${event.pitchingTeam} vs ${event.battingTeam}`;
+      const teams = isAllJinxed ? "All Games" : `${event.pitchingTeam} vs ${event.battingTeam}`;
       if (hasRedisConfig()) {
         try {
           await logPost({
             timestamp: new Date().toISOString(),
             eventType: event.type,
-            pitcherName: event.pitcherName,
-            pitchingTeam: event.pitchingTeam,
-            battingTeam: event.battingTeam,
-            inning: `${event.inningHalf} ${event.inningOrdinal}`,
+            pitcherName: event.pitcherName || "N/A",
+            pitchingTeam: event.pitchingTeam || "N/A",
+            battingTeam: event.battingTeam || "N/A",
+            inning: isAllJinxed ? "End of Day" : `${event.inningHalf} ${event.inningOrdinal}`,
             tweetText: result.text ?? "",
           });
         } catch (err) {
           console.error("Failed to log post to history:", err);
         }
       }
-      await notifyPost(result.text ?? "", event.pitcherName, teams);
+      await notifyPost(result.text ?? "", isAllJinxed ? "No No Jinx" : event.pitcherName, teams);
       return true;
     } else {
       console.warn(`Agent did not post for event ${event.type}`);
@@ -54,7 +58,7 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
     }
   } catch (err) {
     console.error(`Error processing event ${event.type}:`, err);
-    await notifyError(`Processing ${event.type} for ${event.pitcherName}`, err);
+    await notifyError(`Processing ${event.type} for ${event.pitcherName || "all_jinxed"}`, err);
     return false;
   }
 }

@@ -68,6 +68,14 @@ function buildToolDefs(prompt: PromptConfig): ChatCompletionTool[] {
 }
 
 async function buildUserMessage(event: NoHitterEvent): Promise<string> {
+  if (event.type === "all_jinxed") {
+    return [
+      "Event: all_jinxed",
+      "All no-hitters today have been broken up. Not a single one survived.",
+      "Craft a celebratory end-of-day post.",
+    ].join("\n");
+  }
+
   const lines = [
     `Event: ${event.type}`,
     `Game PK: ${event.gamePk}`,

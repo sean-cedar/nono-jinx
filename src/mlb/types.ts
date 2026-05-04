@@ -156,7 +156,8 @@ export type NoHitterEventType =
   | "no_hitter_complete"
   | "perfect_game_complete"
   | "perfect_game_broken"
-  | "pitcher_replaced";
+  | "pitcher_replaced"
+  | "all_jinxed";
 
 export interface NoHitterEvent {
   type: NoHitterEventType;

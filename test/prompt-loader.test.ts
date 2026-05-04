@@ -59,6 +59,15 @@ describe("prompt-loader", () => {
     expect(replaced.systemPrompt).toContain("PULLED");
   });
 
+  it("loads jinx-all-clear.md for all_jinxed event", () => {
+    const prompt = loadPromptForEvent("all_jinxed");
+
+    expect(prompt.tools).toHaveLength(1);
+    expect(prompt.tools[0].name).toBe("post_to_x");
+    expect(prompt.systemPrompt).toContain("BROKEN UP");
+    expect(prompt.systemPrompt).toContain("celebrate");
+  });
+
   it("throws for unknown event type", () => {
     expect(() => loadPromptForEvent("unknown_event")).toThrow(
       "No prompt file mapped for event type: unknown_event",

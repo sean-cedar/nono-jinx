@@ -236,4 +236,75 @@ describe("detectNoHitters", () => {
 
     expect(result.events.filter((e) => e.type === "pitcher_replaced")).toHaveLength(0);
   });
+
+  it("emits all_jinxed when the last no-hitter is broken", async () => {
+    mockGetLinescore.mockResolvedValue(linescoreNormal as any);
+    mockGetBoxscore.mockResolvedValue(boxscoreWithWalk as any);
+
+    const result = await detectNoHitters(
+      [makeGame(12345)],
+      [],
+      { "12345-home": makeState({ isPerfectGame: false }) },
+    );
+
+    const allJinxed = result.events.filter((e) => e.type === "all_jinxed");
+    expect(allJinxed).toHaveLength(1);
+    expect(allJinxed[0].gamePk).toBe(0);
+    expect(Object.keys(result.updatedState)).toHaveLength(0);
+  });
+
+  it("does not emit all_jinxed when a no-hitter is completed", async () => {
+    const boxscore = withPitcherCount(boxscorePerfect, "home", 1);
+    mockGetLinescore.mockResolvedValue({
+      ...linescoreNoHitter,
+      currentInning: 9,
+      currentInningOrdinal: "9th",
+      inningState: "End",
+    } as any);
+    mockGetBoxscore.mockResolvedValue(boxscore as any);
+
+    const result = await detectNoHitters(
+      [],
+      [makeGame(12345, "Final")],
+      { "12345-home": makeState({ lastReportedInning: 8 }) },
+    );
+
+    const allJinxed = result.events.filter((e) => e.type === "all_jinxed");
+    expect(allJinxed).toHaveLength(0);
+  });
+
+  it("does not emit all_jinxed when active no-hitters remain", async () => {
+    const boxscore = withPitcherCount(boxscorePerfect, "home", 1);
+    mockGetLinescore.mockResolvedValue(linescoreNoHitter as any);
+    mockGetBoxscore.mockResolvedValue(boxscore as any);
+
+    // Game 12345 still has an active no-hitter, game 99999 is broken
+    mockGetLinescore.mockImplementation(async (gamePk: number) => {
+      if (gamePk === 99999) return linescoreNormal as any;
+      return linescoreNoHitter as any;
+    });
+    mockGetBoxscore.mockResolvedValue(boxscore as any);
+
+    const result = await detectNoHitters(
+      [makeGame(12345), makeGame(99999)],
+      [],
+      {
+        "12345-home": makeState({ lastReportedInning: 4 }),
+        "99999-home": makeState({ gamePk: 99999, isPerfectGame: false }),
+      },
+    );
+
+    const allJinxed = result.events.filter((e) => e.type === "all_jinxed");
+    expect(allJinxed).toHaveLength(0);
+  });
+
+  it("does not emit all_jinxed when no previous state existed", async () => {
+    mockGetLinescore.mockResolvedValue(linescoreNormal as any);
+    mockGetBoxscore.mockResolvedValue(boxscoreWithWalk as any);
+
+    const result = await detectNoHitters([makeGame(12345)], [], {});
+
+    const allJinxed = result.events.filter((e) => e.type === "all_jinxed");
+    expect(allJinxed).toHaveLength(0);
+  });
 });

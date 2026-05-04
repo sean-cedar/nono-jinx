@@ -51,6 +51,7 @@ const EVENT_TO_PROMPT: Record<string, string> = {
   perfect_game_complete: "jinx-complete.md",
   perfect_game_broken: "jinx-perfect-broken.md",
   pitcher_replaced: "jinx-pitcher-replaced.md",
+  all_jinxed: "jinx-all-clear.md",
 };
 
 export function loadPromptForEvent(eventType: string): PromptConfig {
