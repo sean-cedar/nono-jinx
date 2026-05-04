@@ -255,6 +255,22 @@ export async function detectNoHitters(
         ? "perfect_game_in_progress"
         : "no_hitter_in_progress";
       events.push(makeEvent(type, active));
+
+      // Retroactively detect a perfect game that was broken before we started tracking
+      if (!active.isPerfectGame && active.completedHalves <= 2) {
+        const pitchingSide = active.side;
+        const battingSide = pitchingSide === "home" ? "away" : "home";
+        try {
+          const boxscore = await getBoxscore(active.gamePk);
+          const batting = boxscore.teams[battingSide].teamStats.batting;
+          const fielding = boxscore.teams[pitchingSide].teamStats.fielding;
+          const hadPerfectGameBreaker =
+            batting.baseOnBalls > 0 || batting.hitByPitch > 0 || fielding.errors > 0;
+          if (hadPerfectGameBreaker) {
+            events.push(makeEvent("perfect_game_broken", active));
+          }
+        } catch { /* best-effort — still emit the no_hitter_in_progress event */ }
+      }
     } else {
       // Check for pitcher replacement
       const prevPitcherCount = existing.pitcherCount ?? 1;
