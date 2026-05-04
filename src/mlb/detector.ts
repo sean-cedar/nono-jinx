@@ -92,6 +92,42 @@ function completedHalfInnings(
 
 const HIT_EVENTS = new Set(["Single", "Double", "Triple", "Home Run"]);
 
+const PERFECT_GAME_BREAKER_EVENTS = new Set([
+  "Walk",
+  "Intent Walk",
+  "Hit By Pitch",
+  "Field Error",
+  "Balk",
+  "Interference",
+  "Catcher Interference",
+]);
+
+/**
+ * Find the play that broke the perfect game (walk, HBP, error, etc.).
+ * Searches in reverse so the most recent breaker is found first.
+ */
+function findPerfectGameBreaker(
+  plays: PlayByPlayEntry[],
+  pitchingSide: "home" | "away",
+): { batter: string; event: string; description: string } | null {
+  const battingHalf = pitchingSide === "home" ? "top" : "bottom";
+  for (let i = plays.length - 1; i >= 0; i--) {
+    const play = plays[i];
+    if (
+      play.about.halfInning === battingHalf &&
+      play.about.isComplete &&
+      PERFECT_GAME_BREAKER_EVENTS.has(play.result.event)
+    ) {
+      return {
+        batter: play.matchup.batter.fullName,
+        event: play.result.event,
+        description: play.result.description,
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * Find the first hit by the batting side in the play-by-play data.
  * pitchingSide refers to the state key side (the team pitching the no-hitter).
@@ -267,7 +303,17 @@ export async function detectNoHitters(
           const hadPerfectGameBreaker =
             batting.baseOnBalls > 0 || batting.hitByPitch > 0 || fielding.errors > 0;
           if (hadPerfectGameBreaker) {
-            events.push(makeEvent("perfect_game_broken", active));
+            const breakerOverrides: Partial<NoHitterEvent> = {};
+            try {
+              const pbp = await getPlayByPlay(active.gamePk);
+              const breaker = findPerfectGameBreaker(pbp.allPlays, pitchingSide);
+              if (breaker) {
+                breakerOverrides.breakupBatter = breaker.batter;
+                breakerOverrides.breakupPlay = breaker.event;
+                breakerOverrides.breakupDescription = breaker.description;
+              }
+            } catch { /* best-effort */ }
+            events.push(makeEvent("perfect_game_broken", active, breakerOverrides));
           }
         } catch { /* best-effort — still emit the no_hitter_in_progress event */ }
       }
@@ -284,7 +330,17 @@ export async function detectNoHitters(
 
       // Perfect game broken but no-hitter continues (walk, HBP, error, etc.)
       if (existing.isPerfectGame && !active.isPerfectGame) {
-        events.push(makeEvent("perfect_game_broken", active));
+        const breakerOverrides: Partial<NoHitterEvent> = {};
+        try {
+          const pbp = await getPlayByPlay(active.gamePk);
+          const breaker = findPerfectGameBreaker(pbp.allPlays, active.side);
+          if (breaker) {
+            breakerOverrides.breakupBatter = breaker.batter;
+            breakerOverrides.breakupPlay = breaker.event;
+            breakerOverrides.breakupDescription = breaker.description;
+          }
+        } catch { /* best-effort */ }
+        events.push(makeEvent("perfect_game_broken", active, breakerOverrides));
       }
 
       // Only post again when the batting side has completed another half-inning,
