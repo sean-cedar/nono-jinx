@@ -338,27 +338,29 @@ function timeAgo(timestamp: string): string {
   .hero-stats {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 2rem;
-    padding-top: 2rem;
+    gap: 1rem;
     flex-shrink: 0;
-    text-align: right;
+    align-self: center;
+    border-left: 3px solid var(--red);
+    padding-left: 1.25rem;
   }
 
   .stat {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.6rem;
   }
 
   .stat-number {
     font-family: var(--font-display);
-    font-size: clamp(3rem, 8vw, 4.5rem);
+    font-size: 2rem;
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.03em;
     color: var(--black);
+    min-width: 3.5rem;
+    text-align: right;
   }
 
   .stat-number.red {
@@ -367,10 +369,10 @@ function timeAgo(timestamp: string): string {
 
   .stat-label {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     color: var(--warm-gray);
   }
 
@@ -768,16 +770,21 @@ function timeAgo(timestamp: string): string {
       gap: 2rem;
       margin-top: 2rem;
       padding-top: 1.5rem;
+      border-left: none;
+      padding-left: 0;
       border-top: 1px solid var(--light-gray);
-      text-align: center;
     }
 
     .stat {
+      flex-direction: column;
       align-items: center;
+      gap: 0.25rem;
     }
 
     .stat-number {
-      font-size: 2.5rem;
+      font-size: 2rem;
+      min-width: auto;
+      text-align: center;
     }
 
     .how-grid {
