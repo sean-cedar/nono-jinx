@@ -180,7 +180,6 @@ async function detectInGame(
     if (totalHits !== 0) continue;
 
     const completedHalves = completedHalfInnings(linescore, battingSide);
-    if (completedHalves < MIN_INNING) continue;
 
     // Ensure at least one at-bat has actually occurred — guards against
     // pre-game states where hits=0 simply because nobody has batted yet.
@@ -286,11 +285,13 @@ export async function detectNoHitters(
     const existing = currentState[key];
 
     if (!existing) {
-      // New no-hitter detected
-      const type = active.isPerfectGame
-        ? "perfect_game_in_progress"
-        : "no_hitter_in_progress";
-      events.push(makeEvent(type, active));
+      // New no-hitter detected — only post "in progress" after MIN_INNING
+      if (active.completedHalves >= MIN_INNING) {
+        const type = active.isPerfectGame
+          ? "perfect_game_in_progress"
+          : "no_hitter_in_progress";
+        events.push(makeEvent(type, active));
+      }
 
       // Retroactively detect a perfect game that was broken before we started tracking
       if (!active.isPerfectGame && active.completedHalves <= 2) {
@@ -348,7 +349,7 @@ export async function detectNoHitters(
       const prevHalves = existing.lastCompletedHalves ?? 0;
       const advanced = active.completedHalves > prevHalves;
 
-      if (advanced) {
+      if (advanced && active.completedHalves >= MIN_INNING) {
         const type = active.isPerfectGame
           ? "perfect_game_in_progress"
           : "no_hitter_in_progress";
