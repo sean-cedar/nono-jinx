@@ -49,6 +49,7 @@ const EVENT_TO_PROMPT: Record<string, string> = {
   no_hitter_broken: "jinx-broken.md",
   no_hitter_complete: "jinx-complete.md",
   perfect_game_complete: "jinx-complete.md",
+  perfect_game_broken: "jinx-perfect-broken.md",
   pitcher_replaced: "jinx-pitcher-replaced.md",
 };
 

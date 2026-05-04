@@ -233,6 +233,11 @@ export async function detectNoHitters(
         );
       }
 
+      // Perfect game broken but no-hitter continues (walk, HBP, error, etc.)
+      if (existing.isPerfectGame && !active.isPerfectGame) {
+        events.push(makeEvent("perfect_game_broken", active));
+      }
+
       // Only post again when the batting side has completed another half-inning,
       // not when the game clock advances for the other side's at-bat.
       const prevHalves = existing.lastCompletedHalves ?? 0;
