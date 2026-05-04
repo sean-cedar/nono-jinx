@@ -53,34 +53,34 @@ function timeAgo(timestamp: string): string {
     <!-- ═══ HERO ═══ -->
     <section class="hero">
       <div class="hero-accent" aria-hidden="true"></div>
-      <div class="hero-content">
-        <h1>NO NO<br/><span class="red">JINX</span></h1>
-        <p class="subtitle">Pitcher's got a big butt.</p>
-        <p class="desc">
-          An AI agent that watches every MLB game, waits for a no-hitter,
-          and immediately tells everyone about it. Because talking about
-          a no-hitter is the fastest way to kill one.
-        </p>
-        <div class="hero-actions">
-          <a href="https://x.com/nono_jinx" target="_blank" rel="noopener" class="follow">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            Follow @nono_jinx
-          </a>
+      <div class="hero-layout">
+        <div class="hero-content">
+          <h1>NO NO<br/><span class="red">JINX</span></h1>
+          <p class="subtitle">Pitcher's got a big butt.</p>
+          <p class="desc">
+            An AI agent that watches every MLB game, waits for a no-hitter,
+            and immediately tells everyone about it. Because talking about
+            a no-hitter is the fastest way to kill one.
+          </p>
+          <div class="hero-actions">
+            <a href="https://x.com/nono_jinx" target="_blank" rel="noopener" class="follow">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Follow @nono_jinx
+            </a>
+          </div>
+          <p class="since">Jinxing no-hitters since 2026</p>
         </div>
-        <p class="since">Jinxing no-hitters since 2026</p>
 
         {(stats.jinxed > 0 || stats.completed > 0) && (
-          <div class="hero-stats">
+          <div class="hero-stats" id="heroStats">
             <div class="stat">
               <span class="stat-number red">{stats.jinxed}</span>
               <span class="stat-label">Jinxed</span>
             </div>
-            <span class="stat-divider" aria-hidden="true">/</span>
             <div class="stat">
               <span class="stat-number">{stats.completed}</span>
               <span class="stat-label">Survived</span>
             </div>
-            <span class="stat-divider" aria-hidden="true">/</span>
             <div class="stat">
               <span class="stat-number red">{stats.jinxRate}%</span>
               <span class="stat-label">Jinx Rate</span>
@@ -254,9 +254,18 @@ function timeAgo(timestamp: string): string {
     pointer-events: none;
   }
 
+  .hero-layout {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 3rem;
+  }
+
   .hero-content {
     position: relative;
     max-width: 640px;
+    flex: 1;
   }
 
   h1 {
@@ -325,25 +334,27 @@ function timeAgo(timestamp: string): string {
     color: var(--warm-gray);
   }
 
-  /* ─── HERO STATS ─── */
+  /* ─── HERO STATS (scoreboard) ─── */
   .hero-stats {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 2rem;
-    margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--light-gray);
+    flex-shrink: 0;
+    text-align: right;
   }
 
   .stat {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    align-items: flex-end;
+    gap: 0.25rem;
   }
 
   .stat-number {
     font-family: var(--font-display);
-    font-size: clamp(3rem, 10vw, 5rem);
+    font-size: clamp(3rem, 8vw, 4.5rem);
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -356,20 +367,11 @@ function timeAgo(timestamp: string): string {
 
   .stat-label {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.15em;
     color: var(--warm-gray);
-  }
-
-  .stat-divider {
-    font-family: var(--font-display);
-    font-size: 2.5rem;
-    color: var(--light-gray);
-    font-weight: 300;
-    margin-top: -0.75rem;
-    user-select: none;
   }
 
   /* ─── HOW IT WORKS ─── */
@@ -754,16 +756,28 @@ function timeAgo(timestamp: string): string {
       right: -8rem;
     }
 
+    .hero-layout {
+      flex-direction: column;
+      gap: 0;
+    }
+
     .hero-stats {
-      gap: 1.5rem;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 2rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--light-gray);
+      text-align: center;
+    }
+
+    .stat {
+      align-items: center;
     }
 
     .stat-number {
       font-size: 2.5rem;
-    }
-
-    .stat-divider {
-      font-size: 1.5rem;
     }
 
     .how-grid {
@@ -819,7 +833,7 @@ function timeAgo(timestamp: string): string {
 </style>
 
 <script>
-  const heroStats = document.querySelector('.hero-stats');
+  const heroStats = document.getElementById('heroStats');
   const stickyBar = document.getElementById('stickyBar');
 
   if (heroStats && stickyBar) {
