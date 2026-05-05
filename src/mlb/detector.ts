@@ -460,8 +460,10 @@ export async function detectNoHitters(
     const gamePk = state.gamePk;
 
     if (liveGamePks.has(gamePk)) {
-      // Game is still live but no-hitter is gone -- broken up
-      const overrides: Partial<NoHitterEvent> = { isPerfectGame: false };
+      // Game is still live but no-hitter is gone -- broken up.
+      // If the previous state was a perfect game, the hit broke BOTH.
+      const wasPerfectGame = state.isPerfectGame ?? false;
+      const overrides: Partial<NoHitterEvent> = { isPerfectGame: wasPerfectGame };
       try {
         const linescore = await getLinescore(gamePk);
         overrides.inning = linescore.currentInning;
