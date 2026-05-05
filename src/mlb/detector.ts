@@ -503,21 +503,43 @@ export async function detectNoHitters(
     // Either way, remove from updated state (game over or broken)
   }
 
-  // Emit all_jinxed only when ALL games today are Final and every potential
-  // no-hitter (games × 2) has been broken (none completed/survived).
+  // Emit all_jinxed when every no-hitter slot (games × 2) is accounted for.
+  // Check every game's linescore: both sides must have hits > 0 (broken)
+  // or a no-hitter was completed. This works even while games are still live.
   const totalGames = allGames?.length ?? 0;
   const totalNoHitterSlots = totalGames * 2;
-  const allGamesFinal = totalGames > 0 && allGames!.every(
-    (g) => g.status.abstractGameState === "Final",
-  );
   const noneRemaining = Object.keys(updatedState).length === 0;
   const brokenThisCycle = events.some((e) => e.type === "no_hitter_broken");
   const anyCompleted = events.some(
     (e) => e.type === "no_hitter_complete" || e.type === "perfect_game_complete",
   );
 
-  if (allGamesFinal && noneRemaining && brokenThisCycle && !anyCompleted) {
-    console.log(`All ${totalGames} games final. ${totalNoHitterSlots} no-hitter slots all broken. Celebrating!`);
+  // Don't fire if any games haven't started yet
+  const gamesYetToStart = allGames
+    ? allGames.some((g) => g.status.abstractGameState === "Preview")
+    : false;
+
+  // Check that every side of every live+finished game has given up a hit.
+  // If a game is still in Preview, we skip the check (gamesYetToStart handles it).
+  let allNoHittersBroken = false;
+  if (totalGames > 0 && !gamesYetToStart && noneRemaining && brokenThisCycle && !anyCompleted) {
+    const activeAndFinished = [...liveGames, ...finishedGames];
+    let brokenSlots = 0;
+    for (const game of activeAndFinished) {
+      try {
+        const ls = await getLinescore(game.gamePk);
+        if (ls.teams.away.hits > 0) brokenSlots++;
+        if (ls.teams.home.hits > 0) brokenSlots++;
+      } catch {
+        // Can't verify — don't celebrate yet
+      }
+    }
+    console.log(`No-hitter slots broken: ${brokenSlots}/${totalNoHitterSlots}`);
+    allNoHittersBroken = brokenSlots >= totalNoHitterSlots;
+  }
+
+  if (allNoHittersBroken) {
+    console.log(`All ${totalNoHitterSlots} no-hitter slots across ${totalGames} games broken. Celebrating!`);
     events.push({
       type: "all_jinxed",
       gamePk: 0,
