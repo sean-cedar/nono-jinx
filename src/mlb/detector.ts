@@ -503,24 +503,21 @@ export async function detectNoHitters(
     // Either way, remove from updated state (game over or broken)
   }
 
-  // Emit all_jinxed when every tracked no-hitter is gone, at least one was
-  // broken this cycle, none were completed, no games are waiting to start,
-  // AND no live games still have a side with 0 hits (potential no-hitter).
-  const hadActiveNoHitters = Object.keys(currentState).length > 0;
+  // Emit all_jinxed only when ALL games today are Final and every potential
+  // no-hitter (games × 2) has been broken (none completed/survived).
+  const totalGames = allGames?.length ?? 0;
+  const totalNoHitterSlots = totalGames * 2;
+  const allGamesFinal = totalGames > 0 && allGames!.every(
+    (g) => g.status.abstractGameState === "Final",
+  );
   const noneRemaining = Object.keys(updatedState).length === 0;
   const brokenThisCycle = events.some((e) => e.type === "no_hitter_broken");
   const anyCompleted = events.some(
     (e) => e.type === "no_hitter_complete" || e.type === "perfect_game_complete",
   );
-  const gamesYetToStart = allGames
-    ? allGames.some((g) => g.status.abstractGameState === "Preview")
-    : false;
 
-  // Don't celebrate if there are still live games (some sides may not have
-  // batted yet, or active no-hitters may still be in play).
-  const anyLiveGames = liveGames.length > 0;
-
-  if (hadActiveNoHitters && noneRemaining && brokenThisCycle && !anyCompleted && !gamesYetToStart && !anyLiveGames) {
+  if (allGamesFinal && noneRemaining && brokenThisCycle && !anyCompleted) {
+    console.log(`All ${totalGames} games final. ${totalNoHitterSlots} no-hitter slots all broken. Celebrating!`);
     events.push({
       type: "all_jinxed",
       gamePk: 0,
