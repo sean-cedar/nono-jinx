@@ -37,7 +37,7 @@ function timeAgo(timestamp: string): string {
       <div class="sticky-inner">
         <span class="sticky-mark">NO NO JINX</span>
         <div class="sticky-stats">
-          <span class="sticky-stat sticky-live"><strong class="live">{stats.inProgress}<span class="pulse-dot-sm" aria-hidden="true"></span></strong> Live</span>
+          <span class="sticky-stat sticky-live"><strong class={stats.inProgress > 0 ? "live" : ""}>{stats.inProgress}{stats.inProgress > 0 && <span class="pulse-dot-sm" aria-hidden="true"></span>}</strong> Live</span>
           <span class="sticky-sep">/</span>
           <span class="sticky-stat"><strong class="red">{stats.jinxed}</strong> Jinxed</span>
           <span class="sticky-sep">/</span>
@@ -75,7 +75,7 @@ function timeAgo(timestamp: string): string {
         {(stats.jinxed > 0 || stats.completed > 0) && (
           <div class="hero-stats" id="heroStats">
             <div class="stat stat-live">
-              <span class="stat-number live"><span class="pulse-dot" aria-hidden="true"></span>{stats.inProgress}</span>
+              <span class={`stat-number ${stats.inProgress > 0 ? "live" : ""}`}>{stats.inProgress > 0 && <span class="pulse-dot" aria-hidden="true"></span>}{stats.inProgress}</span>
               <span class="stat-label">In Progress</span>
             </div>
             <div class="stat">
