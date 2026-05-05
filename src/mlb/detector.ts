@@ -31,6 +31,8 @@ interface ActiveNoHitter {
   isPerfectGame: boolean;
   pitchCount?: number;
   strikeouts?: number;
+  currentInning: number;
+  currentInningOrdinal: string;
 }
 
 /**
@@ -213,6 +215,8 @@ async function detectInGame(
       isPerfectGame: isPerfect,
       pitchCount: pitchingStats.numberOfPitches,
       strikeouts: pitchingStats.strikeOuts,
+      currentInning: linescore.currentInning ?? completedHalves,
+      currentInningOrdinal: linescore.currentInningOrdinal ?? toOrdinal(completedHalves),
     });
   }
 
@@ -283,6 +287,7 @@ export async function detectNoHitters(
     activeKeys.add(key);
 
     const existing = currentState[key];
+    let preservePerfectGameState = false;
 
     if (!existing) {
       // New no-hitter detected — only post "in progress" after MIN_INNING
@@ -305,6 +310,7 @@ export async function detectNoHitters(
             batting.baseOnBalls > 0 || batting.hitByPitch > 0 || fielding.errors > 0;
           if (hadPerfectGameBreaker) {
             const breakerOverrides: Partial<NoHitterEvent> = {};
+            let hitFoundInPBP = false;
             try {
               const pbp = await getPlayByPlay(active.gamePk);
               const breaker = findPerfectGameBreaker(pbp.allPlays, pitchingSide);
@@ -313,8 +319,15 @@ export async function detectNoHitters(
                 breakerOverrides.breakupPlay = breaker.event;
                 breakerOverrides.breakupDescription = breaker.description;
               }
+              hitFoundInPBP = !!findBreakupHit(pbp.allPlays, pitchingSide);
             } catch { /* best-effort */ }
-            events.push(makeEvent("perfect_game_broken", active, breakerOverrides));
+            if (hitFoundInPBP) {
+              preservePerfectGameState = true;
+            } else {
+              breakerOverrides.inning = active.currentInning;
+              breakerOverrides.inningOrdinal = active.currentInningOrdinal;
+              events.push(makeEvent("perfect_game_broken", active, breakerOverrides));
+            }
           }
         } catch { /* best-effort — still emit the no_hitter_in_progress event */ }
       }
@@ -332,6 +345,7 @@ export async function detectNoHitters(
       // Perfect game broken but no-hitter continues (walk, HBP, error, etc.)
       if (existing.isPerfectGame && !active.isPerfectGame) {
         const breakerOverrides: Partial<NoHitterEvent> = {};
+        let hitFoundInPBP = false;
         try {
           const pbp = await getPlayByPlay(active.gamePk);
           const breaker = findPerfectGameBreaker(pbp.allPlays, active.side);
@@ -340,8 +354,15 @@ export async function detectNoHitters(
             breakerOverrides.breakupPlay = breaker.event;
             breakerOverrides.breakupDescription = breaker.description;
           }
+          hitFoundInPBP = !!findBreakupHit(pbp.allPlays, active.side);
         } catch { /* best-effort */ }
-        events.push(makeEvent("perfect_game_broken", active, breakerOverrides));
+        if (hitFoundInPBP) {
+          preservePerfectGameState = true;
+        } else {
+          breakerOverrides.inning = active.currentInning;
+          breakerOverrides.inningOrdinal = active.currentInningOrdinal;
+          events.push(makeEvent("perfect_game_broken", active, breakerOverrides));
+        }
       }
 
       // Only post again when the batting side has completed another half-inning,
@@ -367,7 +388,7 @@ export async function detectNoHitters(
       lastReportedInning: active.inning,
       lastReportedHalf: active.inningHalf,
       lastCompletedHalves: active.completedHalves,
-      isPerfectGame: active.isPerfectGame,
+      isPerfectGame: preservePerfectGameState ? true : active.isPerfectGame,
       startedAt: existing?.startedAt ?? new Date().toISOString(),
     };
   }
@@ -456,6 +477,7 @@ export async function detectNoHitters(
   const liveGamePks = new Set(liveGames.map((g) => g.gamePk));
   for (const [key, state] of Object.entries(currentState)) {
     if (activeKeys.has(key)) continue;
+    if (state.broken) continue;
 
     const gamePk = state.gamePk;
 
@@ -483,6 +505,7 @@ export async function detectNoHitters(
       } catch { /* best-effort — still emit event without breakup details */ }
 
       events.push(makeEvent("no_hitter_broken", state, overrides));
+      updatedState[key] = { ...state, broken: true };
     }
 
     const finishedGame = finishedGames.find((g) => g.gamePk === gamePk);

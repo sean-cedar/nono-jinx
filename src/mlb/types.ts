@@ -216,4 +216,5 @@ export interface NoHitterState {
   lastCompletedHalves: number;
   isPerfectGame: boolean;
   startedAt: string;
+  broken?: boolean;
 }
