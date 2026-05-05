@@ -504,8 +504,8 @@ export async function detectNoHitters(
   }
 
   // Emit all_jinxed when every tracked no-hitter is gone, at least one was
-  // broken this cycle, none were completed, AND no games are still waiting to
-  // start (so we don't celebrate prematurely between game slots).
+  // broken this cycle, none were completed, no games are waiting to start,
+  // AND no live games still have a side with 0 hits (potential no-hitter).
   const hadActiveNoHitters = Object.keys(currentState).length > 0;
   const noneRemaining = Object.keys(updatedState).length === 0;
   const brokenThisCycle = events.some((e) => e.type === "no_hitter_broken");
@@ -516,7 +516,11 @@ export async function detectNoHitters(
     ? allGames.some((g) => g.status.abstractGameState === "Preview")
     : false;
 
-  if (hadActiveNoHitters && noneRemaining && brokenThisCycle && !anyCompleted && !gamesYetToStart) {
+  // Don't celebrate if there are still live games (some sides may not have
+  // batted yet, or active no-hitters may still be in play).
+  const anyLiveGames = liveGames.length > 0;
+
+  if (hadActiveNoHitters && noneRemaining && brokenThisCycle && !anyCompleted && !gamesYetToStart && !anyLiveGames) {
     events.push({
       type: "all_jinxed",
       gamePk: 0,
