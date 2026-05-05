@@ -110,7 +110,10 @@ export async function handler(): Promise<{
   processing = true;
   let posted = 0;
   for (const event of events) {
-    const dedupKey = `${event.gamePk}-${event.pitcherName}-${event.type}-${event.inning}`;
+    const isBrokenEvent = event.type === "no_hitter_broken" || event.type === "perfect_game_broken";
+    const dedupKey = isBrokenEvent
+      ? `${event.gamePk}-${event.pitcherName}-${event.type}`
+      : `${event.gamePk}-${event.pitcherName}-${event.type}-${event.inning}`;
     if (await hasPosted(dedupKey)) {
       console.log(`Skipping duplicate: ${dedupKey}`);
       continue;
