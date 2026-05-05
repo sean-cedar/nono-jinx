@@ -94,6 +94,8 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
     ].join("\n");
   }
 
+  const isBroken = event.type === "no_hitter_broken" || event.type === "perfect_game_broken";
+
   const lines = [
     `Event: ${event.type}`,
     `Game PK: ${event.gamePk}`,
@@ -101,11 +103,19 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
     `Starting Pitcher: ${event.startingPitcherName}`,
     `Pitching Team: ${event.pitchingTeam}`,
     `Batting Team: ${event.battingTeam}`,
-    `No-Hit Innings Completed: ${event.inning} (through ${event.inningOrdinal})`,
+  ];
+
+  if (isBroken) {
+    lines.push(`Broken Up In: the ${event.inningOrdinal} inning (the hit came DURING this inning — the pitcher did NOT complete ${event.inning === 1 ? "a full inning" : `${event.inning} full innings`})`);
+  } else {
+    lines.push(`No-Hit Innings Completed: ${event.inning} (through ${event.inningOrdinal})`);
+  }
+
+  lines.push(
     `Perfect Game: ${event.isPerfectGame ? "Yes" : "No"}`,
     `Combined No-Hitter: ${event.isCombinedNoHitter ? "Yes" : "No"}`,
     `Pitchers Used: ${event.pitcherCount}`,
-  ];
+  );
   if (event.pitchCount !== undefined) lines.push(`Pitch Count: ${event.pitchCount}`);
   if (event.strikeouts !== undefined) lines.push(`Strikeouts: ${event.strikeouts}`);
   if (event.breakupBatter && event.breakupPlay) {
