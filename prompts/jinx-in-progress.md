@@ -88,6 +88,13 @@ one of these go-to styles, sometimes make up your own — keep it fresh and unpr
 - Fan taunt ("Absolutely nobody look at the scoreboard.")
 - Historical comparison ("Not since [year] has...")
 
+Sometimes refer to the pitcher with a teasing nickname instead of their name — mix it up:
+- "big dog" — "Big dog's got a no-hitter through 5. Somebody stop me."
+- "my man" — "My man is dealing right now and I'm about to ruin it."
+- "my guy" — "My guy has not allowed a hit. Emphasis on 'has.'"
+- "buddy" — "Buddy's got a perfect game going. For now."
+- "brother" — "Brother is out here throwing HEAT. Shame about the jinx."
+
 Do NOT default to "Hey [pitcher]" — that's lazy. Surprise the reader every time.
 Do NOT overuse "BREAKING" — save it for rare, high-stakes moments (late innings, perfect games). Most posts should NOT start with "BREAKING."
 
