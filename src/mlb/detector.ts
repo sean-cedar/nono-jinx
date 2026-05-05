@@ -372,6 +372,79 @@ export async function detectNoHitters(
     };
   }
 
+  // Retroactively detect early no-hitter breakups that we never tracked.
+  // If a game is live and early (1st-2nd inning) and a side already has hits,
+  // but we never saw that side with 0 hits, emit a no_hitter_broken event.
+  for (const game of liveGames) {
+    const sides: Array<{ battingSide: "home" | "away"; pitchingSide: "home" | "away" }> = [
+      { battingSide: "away", pitchingSide: "home" },
+      { battingSide: "home", pitchingSide: "away" },
+    ];
+    for (const { battingSide, pitchingSide } of sides) {
+      const key = `${game.gamePk}-${pitchingSide}`;
+      if (activeKeys.has(key) || currentState[key] || updatedState[key]) continue;
+
+      try {
+        const [linescore, boxscore] = await Promise.all([
+          getLinescore(game.gamePk),
+          getBoxscore(game.gamePk),
+        ]);
+
+        const totalHits = linescore.teams[battingSide].hits;
+        if (totalHits === 0) continue;
+
+        if ((linescore.currentInning ?? 0) > 2) continue;
+
+        const atBats = boxscore.teams[battingSide].teamStats.batting.atBats;
+        if (atBats === 0) continue;
+
+        const startingPitcherName = resolveStartingPitcher(boxscore, pitchingSide);
+        const pitcherIds = boxscore.teams[pitchingSide].pitchers;
+        const currentPitcherId = pitcherIds[pitcherIds.length - 1];
+        const currentPitcherName = currentPitcherId
+          ? boxscore.teams[pitchingSide].players[`ID${currentPitcherId}`]?.person?.fullName ?? startingPitcherName
+          : startingPitcherName;
+
+        const overrides: Partial<NoHitterEvent> = {
+          inning: linescore.currentInning,
+          inningOrdinal: linescore.currentInningOrdinal,
+          inningHalf: linescore.inningHalf,
+          isPerfectGame: false,
+        };
+
+        try {
+          const pbp = await getPlayByPlay(game.gamePk);
+          const hit = findBreakupHit(pbp.allPlays, pitchingSide);
+          if (hit) {
+            overrides.breakupBatter = hit.batter;
+            overrides.breakupPlay = hit.event;
+            overrides.breakupDescription = hit.description;
+          }
+        } catch { /* best-effort */ }
+
+        const retroEvent: NoHitterEvent = {
+          type: "no_hitter_broken",
+          gamePk: game.gamePk,
+          pitcherName: currentPitcherName,
+          startingPitcherName,
+          pitchingTeam: game.teams[pitchingSide].team.name,
+          battingTeam: game.teams[battingSide].team.name,
+          inning: linescore.currentInning ?? 1,
+          inningOrdinal: linescore.currentInningOrdinal ?? "1st",
+          inningHalf: linescore.inningHalf ?? "Top",
+          isPerfectGame: false,
+          isCombinedNoHitter: false,
+          pitcherCount: pitcherIds.length,
+          gameDate: new Date().toISOString(),
+          ...overrides,
+        };
+        events.push(retroEvent);
+      } catch (err) {
+        console.error(`Error checking early breakup for game ${game.gamePk} side ${pitchingSide}:`, err);
+      }
+    }
+  }
+
   // Check for broken no-hitters and completed games
   const liveGamePks = new Set(liveGames.map((g) => g.gamePk));
   for (const [key, state] of Object.entries(currentState)) {

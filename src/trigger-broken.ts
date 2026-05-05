@@ -21,9 +21,9 @@ function loadTeamHandles(): Record<string, string> {
 }
 
 async function main() {
-  const pitcherName = "Shane Baz";
-  const pitchingTeam = "Baltimore Orioles";
-  const battingTeam = "New York Yankees";
+  const pitcherName = "Logan Gilbert";
+  const pitchingTeam = "Seattle Mariners";
+  const battingTeam = "Atlanta Braves";
 
   const handles = loadTeamHandles();
   const pitchingHandle = handles[pitchingTeam];
@@ -36,12 +36,12 @@ async function main() {
     `Starting Pitcher: ${pitcherName}`,
     `Pitching Team: ${pitchingTeam}`,
     `Batting Team: ${battingTeam}`,
-    `No-Hit Innings Completed: 0 (through 0th)`,
+    `No-Hit Innings Completed: 0 (broken in the 1st)`,
     `Perfect Game: No`,
     `Combined No-Hitter: No`,
     `Pitchers Used: 1`,
-    `Breakup Hit: Double by Trent Grisham`,
-    `Play Description: Trent Grisham doubles to right field.`,
+    `Breakup Hit: Home Run by Drake Baldwin`,
+    `Play Description: Drake Baldwin homers to break up the no-hitter in the 1st inning.`,
   ];
 
   if (pitcherHandle) lines.push(`Current Pitcher X Handle: @${pitcherHandle}`);
