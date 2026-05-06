@@ -84,14 +84,16 @@ export async function handler(): Promise<{
     return { eventsDetected: 0, eventsPosted: 0 };
   }
 
-  const allGames: ScheduleGame[] = await getSchedule(date);
+  const rawGames: ScheduleGame[] = await getSchedule(date);
+  const allGames = rawGames.filter((g) => g.status.detailedState !== "Postponed");
+  const postponed = rawGames.length - allGames.length;
   const liveGames = allGames.filter(
     (g) => g.status.abstractGameState === "Live" &&
       !new Set(["Pre-Game", "Warmup", "Delayed Start", "Delayed", "Scheduled"]).has(g.status.detailedState),
   );
   const finishedGames = allGames.filter((g) => g.status.abstractGameState === "Final");
 
-  console.log(`Live games: ${liveGames.length}, Finished games: ${finishedGames.length}`);
+  console.log(`Live games: ${liveGames.length}, Finished games: ${finishedGames.length}${postponed ? `, Postponed: ${postponed}` : ""}`);
 
   if (liveGames.length === 0 && finishedGames.length === 0) {
     console.log("No live or finished games. Exiting.");
