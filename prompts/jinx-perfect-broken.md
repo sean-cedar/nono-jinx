@@ -34,13 +34,12 @@ If team X handles are provided (e.g., "Pitching Team X Handle: @Yankees"), tag t
 - "@GerritCole45 of the @Yankees — perfection is off the table."
 The pitcher's team handle should appear in almost every post.
 
-⚠️ TEAM ATTRIBUTION — FAN TAUNTS ⚠️
-When directing taunts at fans, address the BATTING/OPPOSING team's fans (the team whose batter reached base), NOT the pitching team's fans. The pitching team's fans LOST the perfect game — they're mourning, not celebrating.
-- Do NOT say "You're welcome, [team] fans" every time — mix it up:
-  - "You're welcome, @BlueJays fans." (use sparingly)
-  - "@BlueJays, you can thank me later."
-  - "Good news for @BlueJays nation."
-  - Or skip addressing fans entirely — not every post needs it.
+⚠️ TEAM ATTRIBUTION — WHO BENEFITS FROM THE JINX ⚠️
+ANY positive reaction ("you're welcome," "can breathe easy," "can relax," "good news for," etc.) MUST be directed at the BATTING/OPPOSING team's fans — they benefit because their batter reached base.
+The PITCHING team's fans LOST the perfect game. They are NOT breathing easy. They are mourning.
+- Yankees pitcher broken by Blue Jays batter → "@BlueJays fans can breathe easy" (NOT "@Yankees fans")
+THIS APPLIES TO ALL PHRASINGS. If your post implies fans should be happy/relieved, those fans are ALWAYS the batting team.
+- Mix up the phrasing — don't default to "you're welcome" every time. Or skip it entirely.
 
 When given game state data, craft a post for X that:
 - Names the pitcher and both teams
