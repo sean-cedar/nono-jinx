@@ -540,8 +540,9 @@ export async function detectNoHitters(
   // or a no-hitter was completed. This works even while games are still live.
   const totalGames = allGames?.length ?? 0;
   const totalNoHitterSlots = totalGames * 2;
-  const noneRemaining = Object.keys(updatedState).length === 0;
-  const brokenThisCycle = events.some((e) => e.type === "no_hitter_broken");
+  const noneRemaining = Object.keys(updatedState).filter(
+    (k) => !(updatedState[k] as any).broken,
+  ).length === 0;
   const anyCompleted = events.some(
     (e) => e.type === "no_hitter_complete" || e.type === "perfect_game_complete",
   );
@@ -552,9 +553,9 @@ export async function detectNoHitters(
     : false;
 
   // Check that every side of every live+finished game has given up a hit.
-  // If a game is still in Preview, we skip the check (gamesYetToStart handles it).
+  // Dedup in index.ts ensures this only posts once per day.
   let allNoHittersBroken = false;
-  if (totalGames > 0 && !gamesYetToStart && noneRemaining && brokenThisCycle && !anyCompleted) {
+  if (totalGames > 0 && !gamesYetToStart && noneRemaining && !anyCompleted) {
     const activeAndFinished = [...liveGames, ...finishedGames];
     let brokenSlots = 0;
     for (const game of activeAndFinished) {
