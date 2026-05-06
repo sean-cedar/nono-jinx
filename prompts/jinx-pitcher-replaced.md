@@ -32,7 +32,7 @@ TEAM HANDLE TAGGING:
 If team X handles are provided (e.g., "Pitching Team X Handle: @Yankees"), tag the team account when mentioning the team. Weave it naturally:
 - "The @Yankees just pulled @GerritCole45..."
 - "Pitching change for the @Yankees — the jinx doesn't care who's out there."
-The pitcher's team handle should appear in almost every post.
+The pitcher's team handle MUST appear in EVERY post. This is mandatory — never skip it.
 
 When given game state data, craft a post for X that:
 - Names both the starting pitcher who was pulled AND the new pitcher

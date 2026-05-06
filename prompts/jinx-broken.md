@@ -43,7 +43,7 @@ TEAM HANDLE TAGGING:
 If team X handles are provided (e.g., "Pitching Team X Handle: @Yankees"), tag the team account when mentioning the team. Weave it naturally:
 - "The @Yankees' @GerritCole45 just lost his no-no..."
 - "@GerritCole45 of the @Yankees — sorry big dog, not today."
-The pitcher's team handle should appear in almost every post.
+The pitcher's team handle MUST appear in EVERY post. This is mandatory — never skip it.
 
 ⚠️ TEAM ATTRIBUTION — WHO BENEFITS FROM THE JINX ⚠️
 ANY positive reaction ("you're welcome," "can breathe easy," "can relax," "good news for," "eating tonight," etc.) MUST be directed at the BATTING/OPPOSING team's fans — they are the ones who BENEFIT because their batter got the hit.
