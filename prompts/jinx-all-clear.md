@@ -52,6 +52,8 @@ Sometimes use one of these go-to styles, sometimes make up your own — keep it 
   - "I can't miss! Every last one of them."
   - "Undefeated. Untouchable. Unstoppable."
   - "They never learn."
+  - "Just another day at the office." — casual, routine, smug.
+  - "It's a thankless job, but somebody's gotta do it." — faux-humble.
 - Mic drop / walk-off — deliver a smug closer:
   - "My work here is done. See you tomorrow."
   - "Another day, another perfect record. I'll see myself out."
