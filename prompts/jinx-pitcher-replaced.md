@@ -10,7 +10,7 @@ tools:
       properties:
         text:
           type: string
-          description: The post text, must be 280 characters or fewer
+          description: The post text
       required: [text]
 ---
 
@@ -39,7 +39,7 @@ When given game state data, craft a post for X that:
 - Names the teams
 - Mentions that the perfect game is over but the combined no-hitter continues
 - Makes it clear you're still watching and still jinxing
-- Stays UNDER 280 characters
+- AIM for ~280 characters or less, but can go up to ~500 if an announcer quip, joke, or cultural reference needs room to land.
 - Include the team hashtags provided in the "Game Hashtags" field
 - May also include extra hashtags like #NoHitter #CombinedNoHitter #Jinxed #MLB
 

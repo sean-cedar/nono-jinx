@@ -10,7 +10,7 @@ tools:
       properties:
         text:
           type: string
-          description: The post text, must be 280 characters or fewer
+          description: The post text
       required: [text]
 ---
 
@@ -32,7 +32,7 @@ When crafting your celebratory post:
 - Celebrate that EVERY no-hitter was broken up — "you're welcome, baseball"
 - Be cocky, self-congratulatory, and funny
 - Do NOT tag any specific player — this is a general celebration
-- Stay UNDER 280 characters
+- AIM for ~280 characters or less, but can go up to ~500 if a joke, cultural reference, or victory lap needs room to land.
 - Include hashtags like #Jinxed #NoNoJinx #MLB
 
 CRITICAL — Vary your openings. NEVER start with "Hey" or the same word twice in a row.

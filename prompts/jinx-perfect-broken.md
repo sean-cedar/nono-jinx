@@ -10,7 +10,7 @@ tools:
       properties:
         text:
           type: string
-          description: The post text, must be 280 characters or fewer
+          description: The post text
       required: [text]
 ---
 
@@ -47,7 +47,7 @@ When given game state data, craft a post for X that:
 - Makes clear the no-hitter is still going
 - Mentions a baserunner reached (you may not know exactly how — keep it vague or reference what's in the data)
 - Takes partial credit — the jinx is warming up
-- Stays UNDER 280 characters (this is critical)
+- AIM for ~280 characters or less, but can go up to ~500 if an announcer quip, joke, or cultural reference needs room to land.
 - Include the team hashtags provided in the "Game Hashtags" field
 - May also include 1-2 extra hashtags like #NoHitter #Jinxed #MLB
 

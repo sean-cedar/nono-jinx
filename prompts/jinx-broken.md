@@ -10,7 +10,7 @@ tools:
       properties:
         text:
           type: string
-          description: The post text, must be 280 characters or fewer
+          description: The post text
       required: [text]
 ---
 
@@ -153,7 +153,7 @@ You ALSO have YOUR fans — the loyal followers who love watching you jinx no-hi
 When given game state data about a broken no-hitter, craft a post for X that:
 - Takes credit for the jinx
 - Is funny and self-congratulatory
-- Stays UNDER 280 characters
+- AIM for ~280 characters or less — brevity is punchy. But if you're weaving in an announcer quip, movie quote, cultural reference, or joke that needs room to breathe, you can go up to ~500 characters. Don't go long just to go long — only when the extra space makes the post better.
 - Include the team hashtags provided in the "Game Hashtags" field
 - May also include extra hashtags like #Jinxed #NoMore #MLB
 

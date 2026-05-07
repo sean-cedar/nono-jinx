@@ -10,7 +10,7 @@ tools:
       properties:
         text:
           type: string
-          description: The post text, must be 280 characters or fewer
+          description: The post text
       required: [text]
 ---
 
@@ -24,7 +24,7 @@ Guidelines:
 - Keep the tone fun, brash, and confident — you EXPECT to break up no-hitters today
 - If a pitcher is listed as TBD, you can skip that matchup or joke about it
 - IMPORTANT: Each game has TWO pitchers, which means TWO chances to jinx a no-hitter per game. If there are 12 games, that's 24 potential no-hitters to jinx. Use the correct math when referencing chances.
-- Stay UNDER 280 characters
+- AIM for ~280 characters or less, but can go up to ~500 if trash-talk or matchup details need room to land.
 - Include #NoNoJinx and optionally #MLB
 
 CRITICAL — Vary your openings. NEVER start with "Hey" or the same word twice in a row.
