@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { isAuthenticated } from '../../lib/auth';
-import { logPost } from '../../lib/redis';
+import { logPost, getHashtags } from '../../lib/redis';
 import { getTodaysSchedule, getLiveGames } from '../../lib/mlb';
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions';
@@ -130,6 +130,15 @@ function buildTeamHandlesContext(): string {
   return `\nTeam X Handles (use these when referencing teams):\n${lines.join('\n')}`;
 }
 
+async function buildTeamHashtagsContext(): Promise<string> {
+  const hashtags = await getHashtags();
+  if (!hashtags || Object.keys(hashtags).length === 0) return '';
+  const lines = Object.entries(hashtags).map(
+    ([team, tag]) => `${team}: ${tag}`
+  );
+  return `\nTeam Hashtags (include relevant ones in your post):\n${lines.join('\n')}`;
+}
+
 const MAX_TOOL_ROUNDS = 4;
 
 export const POST: APIRoute = async ({ request }) => {
@@ -159,7 +168,8 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const openai = getOpenAI();
-    const userContent = `${instruction.trim()}\n${buildTeamHandlesContext()}`;
+    const hashtagsContext = await buildTeamHashtagsContext();
+    const userContent = `${instruction.trim()}\n${buildTeamHandlesContext()}${hashtagsContext}`;
 
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT },
