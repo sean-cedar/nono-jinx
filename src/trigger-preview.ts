@@ -24,10 +24,14 @@ function getTeamHandle(name: string): string | null {
   return loadTeamHandles()[name] ?? null;
 }
 
-function formatGameTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-US", {
-    timeZone: "America/New_York", hour: "numeric", minute: "2-digit",
+function formatGameTime(iso: string, timeZone = "America/New_York"): string {
+  const timeStr = new Date(iso).toLocaleTimeString("en-US", {
+    timeZone, hour: "numeric", minute: "2-digit",
   });
+  const tzAbbrev = new Date(iso).toLocaleTimeString("en-US", {
+    timeZone, timeZoneName: "short",
+  }).split(" ").pop() ?? "";
+  return `${timeStr} ${tzAbbrev}`;
 }
 
 function formatDateLabel(date: string): string {
@@ -60,14 +64,15 @@ async function main() {
   upcoming.forEach((game, i) => {
     const awayP = game.teams.away.probablePitcher?.fullName ?? "TBD";
     const homeP = game.teams.home.probablePitcher?.fullName ?? "TBD";
-    const time = formatGameTime(game.gameDate);
+    const venueTz = game.venue?.timeZone?.id ?? "America/New_York";
+    const time = formatGameTime(game.gameDate, venueTz);
     const aN = game.teams.away.team.name;
     const hN = game.teams.home.team.name;
     const aH = getTeamHandle(aN);
     const hH = getTeamHandle(hN);
     const aL = aH ? `${aN} (@${aH})` : aN;
     const hL = hH ? `${hN} (@${hH})` : hN;
-    lines.push(`${i + 1}. ${aL} (${awayP}) @ ${hL} (${homeP}) — ${time} ET`);
+    lines.push(`${i + 1}. ${aL} (${awayP}) @ ${hL} (${homeP}) — ${time}`);
   });
 
   lines.push("");

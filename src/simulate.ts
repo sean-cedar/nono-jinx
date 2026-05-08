@@ -19,7 +19,9 @@ const scenarios: NoHitterEvent[] = [
     pitcherCount: 1,
     pitchCount: 78,
     strikeouts: 8,
-    gameDate: new Date().toISOString(),
+    totalOuts: 18,
+    gameDate: "2026-05-07T23:05:00Z",
+    venueTimeZone: "America/New_York",
   },
   {
     type: "perfect_game_in_progress",
@@ -36,7 +38,9 @@ const scenarios: NoHitterEvent[] = [
     pitcherCount: 1,
     pitchCount: 85,
     strikeouts: 11,
-    gameDate: new Date().toISOString(),
+    totalOuts: 21,
+    gameDate: "2026-05-07T23:20:00Z",
+    venueTimeZone: "America/New_York",
   },
   {
     type: "no_hitter_broken",
@@ -53,7 +57,9 @@ const scenarios: NoHitterEvent[] = [
     pitcherCount: 1,
     pitchCount: 72,
     strikeouts: 6,
-    gameDate: new Date().toISOString(),
+    totalOuts: 13,
+    gameDate: "2026-05-07T23:05:00Z",
+    venueTimeZone: "America/New_York",
   },
   {
     type: "pitcher_replaced",
@@ -70,7 +76,9 @@ const scenarios: NoHitterEvent[] = [
     pitcherCount: 2,
     pitchCount: 98,
     strikeouts: 9,
-    gameDate: new Date().toISOString(),
+    totalOuts: 21,
+    gameDate: "2026-05-08T00:10:00Z",
+    venueTimeZone: "America/Chicago",
   },
 ];
 

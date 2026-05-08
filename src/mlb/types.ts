@@ -9,10 +9,22 @@ export interface ScheduleDate {
   games: ScheduleGame[];
 }
 
+export interface VenueTimeZone {
+  tz: string;
+  id: string;
+  offset: number;
+  offsetAtGameTime: number;
+}
+
 export interface ScheduleGame {
   gamePk: number;
   gameDate: string;
   status: GameStatus;
+  venue?: {
+    id: number;
+    name: string;
+    timeZone?: VenueTimeZone;
+  };
   teams: {
     away: ScheduleTeamInfo;
     home: ScheduleTeamInfo;
@@ -38,6 +50,7 @@ export interface LinescoreResponse {
   currentInningOrdinal: string;
   inningState: "Top" | "Middle" | "Bottom" | "End";
   inningHalf: "Top" | "Bottom";
+  outs: number;
   scheduledInnings: number;
   innings: LinescoreInning[];
   teams: {
@@ -198,7 +211,10 @@ export interface NoHitterEvent {
   startingPitcherName: string;
   pitchCount?: number;
   strikeouts?: number;
+  totalOuts: number;
   gameDate: string;
+  venueTimeZone: string;
+  venueName?: string;
   breakupBatter?: string;
   breakupPlay?: string;
   breakupDescription?: string;
@@ -216,5 +232,7 @@ export interface NoHitterState {
   lastCompletedHalves: number;
   isPerfectGame: boolean;
   startedAt: string;
+  gameDate: string;
+  venueTimeZone: string;
   broken?: boolean;
 }

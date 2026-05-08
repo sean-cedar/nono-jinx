@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DataTable } from './DataTable';
 import { PostHistory } from './PostHistory';
+import { AdhocPost } from './AdhocPost';
 
 type Tab = 'handles' | 'hashtags' | 'history';
 
@@ -14,6 +15,7 @@ export default function AdminPanel() {
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto' }}>
+      <AdhocPost />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <TabButton active={tab === 'handles'} onClick={() => setTab('handles')}>

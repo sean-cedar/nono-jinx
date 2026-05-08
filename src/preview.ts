@@ -33,12 +33,17 @@ function etNow(): Date {
   );
 }
 
-function formatGameTime(isoDate: string): string {
-  return new Date(isoDate).toLocaleTimeString("en-US", {
-    timeZone: "America/New_York",
+function formatGameTime(isoDate: string, timeZone = "America/New_York"): string {
+  const timeStr = new Date(isoDate).toLocaleTimeString("en-US", {
+    timeZone,
     hour: "numeric",
     minute: "2-digit",
   });
+  const tzAbbrev = new Date(isoDate).toLocaleTimeString("en-US", {
+    timeZone,
+    timeZoneName: "short",
+  }).split(" ").pop() ?? "";
+  return `${timeStr} ${tzAbbrev}`;
 }
 
 function formatDateLabel(date: string): string {
@@ -81,7 +86,8 @@ export async function checkDailyPreview(date: string): Promise<boolean> {
       game.teams.away.probablePitcher?.fullName ?? "TBD";
     const homePitcher =
       game.teams.home.probablePitcher?.fullName ?? "TBD";
-    const time = formatGameTime(game.gameDate);
+    const venueTz = game.venue?.timeZone?.id ?? "America/New_York";
+    const time = formatGameTime(game.gameDate, venueTz);
     const awayName = game.teams.away.team.name;
     const homeName = game.teams.home.team.name;
     const awayHandle = getTeamHandle(awayName);
@@ -89,7 +95,7 @@ export async function checkDailyPreview(date: string): Promise<boolean> {
     const awayLabel = awayHandle ? `${awayName} (@${awayHandle})` : awayName;
     const homeLabel = homeHandle ? `${homeName} (@${homeHandle})` : homeName;
     lines.push(
-      `${i + 1}. ${awayLabel} (${awayPitcher}) @ ${homeLabel} (${homePitcher}) — ${time} ET`,
+      `${i + 1}. ${awayLabel} (${awayPitcher}) @ ${homeLabel} (${homePitcher}) — ${time}`,
     );
   });
 

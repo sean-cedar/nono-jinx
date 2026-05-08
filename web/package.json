@@ -19,7 +19,9 @@
     "@upstash/redis": "^1.37.0",
     "@vercel/analytics": "^2.0.1",
     "astro": "^6.2.1",
+    "openai": "^6.37.0",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "twitter-api-v2": "^1.29.0"
   }
 }

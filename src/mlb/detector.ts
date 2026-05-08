@@ -31,6 +31,10 @@ interface ActiveNoHitter {
   isPerfectGame: boolean;
   pitchCount?: number;
   strikeouts?: number;
+  totalOuts: number;
+  gameDate: string;
+  venueTimeZone: string;
+  venueName?: string;
   currentInning: number;
   currentInningOrdinal: string;
 }
@@ -215,6 +219,10 @@ async function detectInGame(
       isPerfectGame: isPerfect,
       pitchCount: pitchingStats.numberOfPitches,
       strikeouts: pitchingStats.strikeOuts,
+      totalOuts: completedHalves * 3,
+      gameDate: game.gameDate,
+      venueTimeZone: game.venue?.timeZone?.id ?? "America/New_York",
+      venueName: game.venue?.name,
       currentInning: linescore.currentInning ?? completedHalves,
       currentInningOrdinal: linescore.currentInningOrdinal ?? toOrdinal(completedHalves),
     });
@@ -236,6 +244,9 @@ function makeEvent(
   const isCombined = "pitcherCount" in active
     ? active.pitcherCount > 1
     : false;
+  const totalOuts = "totalOuts" in active
+    ? active.totalOuts
+    : ("lastCompletedHalves" in active ? active.lastCompletedHalves * 3 : 0);
   return {
     type,
     gamePk: active.gamePk,
@@ -251,7 +262,10 @@ function makeEvent(
     startingPitcherName: active.startingPitcherName,
     pitchCount: "pitchCount" in active ? active.pitchCount : undefined,
     strikeouts: "strikeouts" in active ? active.strikeouts : undefined,
-    gameDate: new Date().toISOString(),
+    totalOuts,
+    gameDate: active.gameDate,
+    venueTimeZone: "venueTimeZone" in active ? active.venueTimeZone : "America/New_York",
+    venueName: "venueName" in active ? active.venueName : undefined,
     ...overrides,
   };
 }
@@ -390,6 +404,8 @@ export async function detectNoHitters(
       lastCompletedHalves: active.completedHalves,
       isPerfectGame: preservePerfectGameState ? true : active.isPerfectGame,
       startedAt: existing?.startedAt ?? new Date().toISOString(),
+      gameDate: active.gameDate,
+      venueTimeZone: active.venueTimeZone,
     };
   }
 
@@ -431,6 +447,7 @@ export async function detectNoHitters(
           const pbp = await getPlayByPlay(game.gamePk);
           const hit = findBreakupHit(pbp.allPlays, pitchingSide);
           if (hit) {
+            const totalOuts = ((linescore.currentInning ?? 1) - 1) * 3 + (linescore.outs ?? 0);
             const retroEvent: NoHitterEvent = {
               type: "no_hitter_broken",
               gamePk: game.gamePk,
@@ -444,14 +461,15 @@ export async function detectNoHitters(
               isPerfectGame: false,
               isCombinedNoHitter: false,
               pitcherCount: pitcherIds.length,
-              gameDate: new Date().toISOString(),
+              totalOuts,
+              gameDate: game.gameDate,
+              venueTimeZone: game.venue?.timeZone?.id ?? "America/New_York",
               breakupBatter: hit.batter,
               breakupPlay: hit.event,
               breakupDescription: hit.description,
             };
             events.push(retroEvent);
 
-            // Mark in state so we don't re-detect on subsequent polls
             updatedState[key] = {
               gamePk: game.gamePk,
               pitcherName: currentPitcherName,
@@ -464,6 +482,8 @@ export async function detectNoHitters(
               lastCompletedHalves: 0,
               isPerfectGame: false,
               startedAt: new Date().toISOString(),
+              gameDate: game.gameDate,
+              venueTimeZone: game.venue?.timeZone?.id ?? "America/New_York",
             };
           }
         } catch { /* best-effort — skip if can't get play-by-play */ }
@@ -491,6 +511,7 @@ export async function detectNoHitters(
         overrides.inning = linescore.currentInning;
         overrides.inningOrdinal = linescore.currentInningOrdinal;
         overrides.inningHalf = linescore.inningHalf;
+        overrides.totalOuts = ((linescore.currentInning ?? 1) - 1) * 3 + (linescore.outs ?? 0);
       } catch { /* use defaults from state */ }
 
       try {
@@ -525,6 +546,7 @@ export async function detectNoHitters(
               isPerfectGame: isPerfect,
               pitcherCount: boxscore.teams[side].pitchers.length,
               isCombinedNoHitter: boxscore.teams[side].pitchers.length > 1,
+              totalOuts: linescore.currentInning * 3,
             }),
           );
         }
@@ -586,7 +608,9 @@ export async function detectNoHitters(
       isCombinedNoHitter: false,
       pitcherCount: 0,
       startingPitcherName: "",
+      totalOuts: 0,
       gameDate: new Date().toISOString(),
+      venueTimeZone: "America/New_York",
     });
   }
 

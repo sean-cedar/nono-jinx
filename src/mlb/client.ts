@@ -17,7 +17,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export async function getSchedule(date: string): Promise<ScheduleGame[]> {
-  const url = `${BASE_URL}/api/v1/schedule?sportId=1&date=${date}`;
+  const url = `${BASE_URL}/api/v1/schedule?sportId=1&date=${date}&hydrate=venue(timezone)`;
   const data = await fetchJson<ScheduleResponse>(url);
   if (!data.dates || data.dates.length === 0) return [];
   return data.dates[0].games;
@@ -57,7 +57,7 @@ export async function getPlayByPlay(gamePk: number): Promise<PlayByPlayResponse>
 }
 
 export async function getScheduleWithPitchers(date: string): Promise<ScheduleGame[]> {
-  const url = `${BASE_URL}/api/v1/schedule?sportId=1&date=${date}&hydrate=probablePitcher(note)`;
+  const url = `${BASE_URL}/api/v1/schedule?sportId=1&date=${date}&hydrate=probablePitcher(note),venue(timezone)`;
   const data = await fetchJson<ScheduleResponse>(url);
   if (!data.dates || data.dates.length === 0) return [];
   return data.dates[0].games;

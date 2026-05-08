@@ -46,6 +46,14 @@ export interface PostHistoryEntry {
   tweetText: string;
 }
 
+const HISTORY_MAX = 500;
+
+export async function logPost(entry: PostHistoryEntry): Promise<void> {
+  const redis = getRedis();
+  await redis.lpush(HISTORY_KEY, JSON.stringify(entry));
+  await redis.ltrim(HISTORY_KEY, 0, HISTORY_MAX - 1);
+}
+
 export async function getPostHistory(limit = 10): Promise<PostHistoryEntry[]> {
   const raw = await getRedis().lrange<string>(HISTORY_KEY, 0, limit - 1);
   return raw.map((item) => typeof item === "string" ? JSON.parse(item) : item as unknown as PostHistoryEntry);

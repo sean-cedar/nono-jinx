@@ -96,19 +96,39 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
 
   const isBroken = event.type === "no_hitter_broken" || event.type === "perfect_game_broken";
 
+  // Time of day based on game start time in venue's local timezone
+  const tz = event.venueTimeZone || "America/New_York";
+  const gameStartLocal = new Date(event.gameDate).toLocaleString("en-US", { timeZone: tz });
+  const gameStartHour = new Date(gameStartLocal).getHours();
+  const timeOfDay = gameStartHour < 12 ? "morning" : gameStartHour < 17 ? "afternoon" : "evening";
+  const gameStartTimeStr = new Date(event.gameDate).toLocaleTimeString("en-US", {
+    timeZone: tz,
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const tzAbbrev = new Date(event.gameDate).toLocaleTimeString("en-US", {
+    timeZone: tz,
+    timeZoneName: "short",
+  }).split(" ").pop() ?? "";
+
   const lines = [
     `Event: ${event.type}`,
     `Game PK: ${event.gamePk}`,
+    `Game Start Time: ${gameStartTimeStr} ${tzAbbrev} (${timeOfDay} game)`,
+    ...(event.venueName ? [`Venue: ${event.venueName}`] : []),
     `Current Pitcher: ${event.pitcherName}`,
     `Starting Pitcher: ${event.startingPitcherName}`,
     `Pitching Team: ${event.pitchingTeam}`,
     `Batting Team: ${event.battingTeam}`,
   ];
 
+  const outsRemaining = 27 - event.totalOuts;
   if (isBroken) {
     lines.push(`Broken Up In: the ${event.inningOrdinal} inning (the hit came DURING this inning — the pitcher did NOT complete ${event.inning === 1 ? "a full inning" : `${event.inning} full innings`})`);
+    lines.push(`Outs Away From CG No-No: ${outsRemaining} (pitcher had recorded ${event.totalOuts} outs)`);
   } else {
     lines.push(`No-Hit Innings Completed: ${event.inning} (through ${event.inningOrdinal})`);
+    lines.push(`Outs Away From CG No-No: ${outsRemaining} (pitcher has recorded ${event.totalOuts} outs)`);
   }
 
   lines.push(
