@@ -46,14 +46,20 @@ async function fetchSchedule(hydrate: string): Promise<ScheduleGame[]> {
 }
 
 export async function getTodaysSchedule(): Promise<string> {
-  const games = await fetchSchedule("probablePitcher(note),venue(timezone)");
+  const rawGames = await fetchSchedule("probablePitcher(note),venue(timezone)");
   const date = todayET();
+  const games = rawGames.filter((g) => g.status.detailedState !== "Postponed");
+  const postponed = rawGames.length - games.length;
 
   if (games.length === 0) {
     return `No MLB games scheduled for ${date}.`;
   }
 
-  const lines: string[] = [`MLB Schedule for ${date} — ${games.length} game(s):\n`];
+  const chances = games.length * 2;
+  const lines: string[] = [
+    `MLB Schedule for ${date} — ${games.length} game(s)${postponed ? ` (${postponed} postponed)` : ""}`,
+    `Each game has 2 no-hitter chances (home pitcher and away pitcher), so ${games.length} games = ${chances} total chances to jinx.\n`,
+  ];
 
   for (let i = 0; i < games.length; i++) {
     const g = games[i];
