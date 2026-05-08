@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { isAuthenticated } from '../../lib/auth';
 import { logPost } from '../../lib/redis';
+import { getTodaysSchedule, getLiveGames } from '../../lib/mlb';
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat/completions';
 import { TwitterApi } from 'twitter-api-v2';
@@ -21,6 +22,13 @@ You're being given a custom instruction by your admin. Follow the instruction an
 
 AIM for ~280 characters or less — brevity is punchy. But if the instruction calls for something longer or more detailed, you can go up to ~500 characters. Include #NoNoJinx and optionally #MLB if relevant.
 
+TOOLS — You have access to real MLB data:
+- get_todays_schedule: Fetches today's full MLB schedule with probable pitchers, game times (in venue local timezone), and venues. ALWAYS call this when the instruction involves matchups, pitchers, or today's games. Never make up game data.
+- get_live_games: Fetches currently live games with scores. ALWAYS call this when the instruction involves current scores, live games, or in-progress action.
+- post_to_x: Posts the final message to X.
+
+Workflow: If the instruction references real game data, call the data tool(s) FIRST, then compose your post using the real data, then call post_to_x.
+
 ABSOLUTE RULE — X HANDLE USAGE:
 NEVER fabricate, guess, or invent any X @handle. If the instruction mentions a player or team and you don't have their confirmed handle, use their FULL NAME only. Do NOT put an @ symbol before a name unless you are 100% certain it is their real X handle. When in doubt, skip the @.
 
@@ -31,6 +39,22 @@ CRITICAL — Vary your openings. NEVER start with "Hey" or the same word twice i
 Follow the admin's instruction, craft the post, and call post_to_x with the text.`;
 
 const TOOLS: ChatCompletionTool[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_todays_schedule',
+      description: "Fetch today's full MLB schedule with probable pitchers, game times (in venue local timezone), and venues.",
+      parameters: { type: 'object', properties: {} },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_live_games',
+      description: 'Fetch currently live MLB games with scores and game state.',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
   {
     type: 'function',
     function: {
@@ -106,7 +130,7 @@ function buildTeamHandlesContext(): string {
   return `\nTeam X Handles (use these when referencing teams):\n${lines.join('\n')}`;
 }
 
-const MAX_TOOL_ROUNDS = 2;
+const MAX_TOOL_ROUNDS = 4;
 
 export const POST: APIRoute = async ({ request }) => {
   if (!isAuthenticated(request)) {
@@ -173,39 +197,74 @@ export const POST: APIRoute = async ({ request }) => {
         );
       }
 
+      let posted = false;
+      let postedText = '';
+      let tweetId = '';
+
       for (const toolCall of message.tool_calls) {
-        if (toolCall.type !== 'function' || toolCall.function.name !== 'post_to_x') {
+        if (toolCall.type !== 'function') continue;
+        const fnName = toolCall.function.name;
+
+        if (fnName === 'get_todays_schedule') {
+          try {
+            const schedule = await getTodaysSchedule();
+            messages.push({ role: 'tool', tool_call_id: toolCall.id, content: schedule });
+          } catch (err) {
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ error: `Failed to fetch schedule: ${err}` }),
+            });
+          }
+        } else if (fnName === 'get_live_games') {
+          try {
+            const live = await getLiveGames();
+            messages.push({ role: 'tool', tool_call_id: toolCall.id, content: live });
+          } catch (err) {
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ error: `Failed to fetch live games: ${err}` }),
+            });
+          }
+        } else if (fnName === 'post_to_x') {
+          const args = JSON.parse(toolCall.function.arguments);
+          const text: string = args.text;
+
+          const twitter = getTwitterClient();
+          const result = await twitter.v2.tweet(text);
+
+          await logPost({
+            timestamp: new Date().toISOString(),
+            eventType: 'adhoc',
+            pitcherName: 'N/A',
+            pitchingTeam: 'N/A',
+            battingTeam: 'N/A',
+            inning: 'N/A',
+            tweetText: text,
+          });
+
+          posted = true;
+          postedText = text;
+          tweetId = result.data.id;
           messages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
-            content: JSON.stringify({ success: false, error: 'Unknown tool' }),
+            content: JSON.stringify({ success: true, tweetId: result.data.id }),
           });
-          continue;
+        } else {
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify({ success: false, error: `Unknown tool: ${fnName}` }),
+          });
         }
+      }
 
-        const args = JSON.parse(toolCall.function.arguments);
-        const text: string = args.text;
-
-        const twitter = getTwitterClient();
-        const result = await twitter.v2.tweet(text);
-
-        await logPost({
-          timestamp: new Date().toISOString(),
-          eventType: 'adhoc',
-          pitcherName: 'N/A',
-          pitchingTeam: 'N/A',
-          battingTeam: 'N/A',
-          inning: 'N/A',
-          tweetText: text,
-        });
-
+      if (posted) {
         return new Response(
-          JSON.stringify({
-            success: true,
-            text,
-            tweetId: result.data.id,
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
+          JSON.stringify({ success: true, text: postedText, tweetId }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
         );
       }
     }
