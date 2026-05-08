@@ -194,7 +194,9 @@ export type NoHitterEventType =
   | "perfect_game_broken"
   | "pitcher_replaced"
   | "all_jinxed"
-  | "daily_preview";
+  | "daily_preview"
+  | "scoring_change_hit"
+  | "scoring_change_error";
 
 export interface NoHitterEvent {
   type: NoHitterEventType;

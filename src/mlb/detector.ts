@@ -96,6 +96,20 @@ function completedHalfInnings(
   }
 }
 
+/**
+ * Check if a play description indicates a scoring change by the official scorer.
+ */
+function isScoringChangePlay(description: string): boolean {
+  const lower = description.toLowerCase();
+  return (
+    lower.includes("scoring change") ||
+    lower.includes("scorer") ||
+    lower.includes("changed to") ||
+    lower.includes("ruling changed") ||
+    lower.includes("overturned")
+  );
+}
+
 const HIT_EVENTS = new Set(["Single", "Double", "Triple", "Home Run"]);
 
 const PERFECT_GAME_BREAKER_EVENTS = new Set([
@@ -493,8 +507,62 @@ export async function detectNoHitters(
     }
   }
 
-  // Check for broken no-hitters and completed games
+  // Check for RESTORED no-hitters (hit overturned to error by official scorer)
   const liveGamePks = new Set(liveGames.map((g) => g.gamePk));
+  for (const [key, state] of Object.entries(currentState)) {
+    if (!state.broken) continue;
+    if (!liveGamePks.has(state.gamePk)) continue;
+    if (activeKeys.has(key)) continue;
+
+    const pitchingSide = key.split("-")[1] as "home" | "away";
+    const battingSide = pitchingSide === "home" ? "away" : "home";
+    try {
+      const linescore = await getLinescore(state.gamePk);
+      if (linescore.teams[battingSide].hits === 0) {
+        // The hit was overturned — no-hitter is restored!
+        const boxscore = await getBoxscore(state.gamePk);
+        const isPerfect = checkPerfectGame(boxscore, battingSide, pitchingSide);
+        const pitcherIds = boxscore.teams[pitchingSide].pitchers;
+        const currentPitcherId = pitcherIds[pitcherIds.length - 1];
+        const currentPitcherName = currentPitcherId
+          ? boxscore.teams[pitchingSide].players[`ID${currentPitcherId}`]?.person?.fullName ?? state.pitcherName
+          : state.pitcherName;
+        const completedHalves = completedHalfInnings(linescore, battingSide);
+        const pitchingStats = boxscore.teams[pitchingSide].teamStats.pitching;
+
+        const restoredState: NoHitterState = {
+          ...state,
+          broken: undefined,
+          pitcherName: currentPitcherName,
+          pitcherCount: pitcherIds.length,
+          isPerfectGame: isPerfect,
+          lastReportedInning: completedHalves,
+          lastReportedHalf: linescore.inningHalf,
+          lastCompletedHalves: completedHalves,
+        };
+        delete restoredState.broken;
+
+        updatedState[key] = restoredState;
+        activeKeys.add(key);
+
+        events.push(makeEvent("scoring_change_error", restoredState, {
+          inning: completedHalves,
+          inningOrdinal: toOrdinal(completedHalves),
+          inningHalf: linescore.inningHalf,
+          isPerfectGame: isPerfect,
+          pitcherCount: pitcherIds.length,
+          pitcherName: currentPitcherName,
+          pitchCount: pitchingStats.numberOfPitches,
+          strikeouts: pitchingStats.strikeOuts,
+          totalOuts: completedHalves * 3,
+        }));
+      }
+    } catch (err) {
+      console.error(`Error checking scoring change restoration for ${key}:`, err);
+    }
+  }
+
+  // Check for broken no-hitters and completed games
   for (const [key, state] of Object.entries(currentState)) {
     if (activeKeys.has(key)) continue;
     if (state.broken) continue;
@@ -506,6 +574,7 @@ export async function detectNoHitters(
       // If the previous state was a perfect game, the hit broke BOTH.
       const wasPerfectGame = state.isPerfectGame ?? false;
       const overrides: Partial<NoHitterEvent> = { isPerfectGame: wasPerfectGame };
+      let isScoringChange = false;
       try {
         const linescore = await getLinescore(gamePk);
         overrides.inning = linescore.currentInning;
@@ -522,10 +591,14 @@ export async function detectNoHitters(
           overrides.breakupBatter = hit.batter;
           overrides.breakupPlay = hit.event;
           overrides.breakupDescription = hit.description;
+          if (isScoringChangePlay(hit.description)) {
+            isScoringChange = true;
+          }
         }
       } catch { /* best-effort — still emit event without breakup details */ }
 
-      events.push(makeEvent("no_hitter_broken", state, overrides));
+      const eventType = isScoringChange ? "scoring_change_hit" : "no_hitter_broken";
+      events.push(makeEvent(eventType, state, overrides));
       updatedState[key] = { ...state, broken: true };
     }
 

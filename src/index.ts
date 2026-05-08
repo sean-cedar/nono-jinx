@@ -48,7 +48,7 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
             inning: isAllJinxed ? "End of Day" : `${event.inningHalf} ${event.inningOrdinal}`,
             tweetText: result.text ?? "",
           });
-          if (event.type === "no_hitter_broken") {
+          if (event.type === "no_hitter_broken" || event.type === "scoring_change_hit") {
             await incrementJinxCount();
           } else if (event.type === "no_hitter_complete" || event.type === "perfect_game_complete") {
             await incrementCompletedCount();
@@ -112,8 +112,9 @@ export async function handler(): Promise<{
   processing = true;
   let posted = 0;
   for (const event of events) {
-    const isBrokenEvent = event.type === "no_hitter_broken" || event.type === "perfect_game_broken";
-    const dedupKey = isBrokenEvent
+    const isBrokenEvent = event.type === "no_hitter_broken" || event.type === "perfect_game_broken" || event.type === "scoring_change_hit";
+    const isScoringChangeEvent = event.type === "scoring_change_hit" || event.type === "scoring_change_error";
+    const dedupKey = isBrokenEvent || isScoringChangeEvent
       ? `${event.gamePk}-${event.pitchingTeam}-${event.type}`
       : `${event.gamePk}-${event.pitcherName}-${event.type}-${event.inning}`;
     if (await hasPosted(dedupKey)) {

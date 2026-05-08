@@ -53,6 +53,8 @@ const EVENT_TO_PROMPT: Record<string, string> = {
   pitcher_replaced: "jinx-pitcher-replaced.md",
   all_jinxed: "jinx-all-clear.md",
   daily_preview: "jinx-daily-preview.md",
+  scoring_change_hit: "jinx-scoring-change-hit.md",
+  scoring_change_error: "jinx-scoring-change-error.md",
 };
 
 export function loadPromptForEvent(eventType: string): PromptConfig {

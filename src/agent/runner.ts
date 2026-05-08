@@ -94,7 +94,8 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
     ].join("\n");
   }
 
-  const isBroken = event.type === "no_hitter_broken" || event.type === "perfect_game_broken";
+  const isBroken = event.type === "no_hitter_broken" || event.type === "perfect_game_broken" || event.type === "scoring_change_hit";
+  const isScoringChange = event.type === "scoring_change_hit" || event.type === "scoring_change_error";
 
   // Time of day based on game start time in venue's local timezone
   const tz = event.venueTimeZone || "America/New_York";
@@ -143,6 +144,16 @@ async function buildUserMessage(event: NoHitterEvent): Promise<string> {
   }
   if (event.breakupDescription) {
     lines.push(`Play Description: ${event.breakupDescription}`);
+  }
+
+  if (isScoringChange) {
+    if (event.type === "scoring_change_hit") {
+      lines.push(`Scoring Change: The official scorer overturned a previous error ruling to a HIT, breaking the no-hitter.`);
+      lines.push(`Context: This was NOT a live at-bat breakup — the scorer changed a previous ruling after review.`);
+    } else if (event.type === "scoring_change_error") {
+      lines.push(`Scoring Change: The official scorer overturned a previous hit ruling to an ERROR, RESTORING the no-hitter.`);
+      lines.push(`Context: The no-hitter is BACK. The previous hit was changed to an error, meaning no hits have been recorded.`);
+    }
   }
 
   const currentHandle = await getHandle(event.pitcherName);
