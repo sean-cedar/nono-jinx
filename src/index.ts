@@ -7,7 +7,7 @@ import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
-import { hasRedisConfig, logPost, hasPosted, markPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
+import { hasRedisConfig, logPost, hasPosted, markPosted, clearPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
 import type { NoHitterEvent } from "./mlb/types.js";
 import { checkDailyPreview } from "./preview.js";
@@ -124,6 +124,11 @@ export async function handler(): Promise<{
     const success = await processEvent(event);
     if (success) {
       await markPosted(dedupKey);
+      if (event.type === "scoring_change_error") {
+        await clearPosted(`${event.gamePk}-${event.pitchingTeam}-no_hitter_broken`);
+        await clearPosted(`${event.gamePk}-${event.pitchingTeam}-perfect_game_broken`);
+        await clearPosted(`${event.gamePk}-${event.pitchingTeam}-scoring_change_hit`);
+      }
       posted++;
     }
   }

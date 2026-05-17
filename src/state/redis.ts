@@ -108,3 +108,9 @@ export async function markPosted(eventKey: string, ttl?: number): Promise<void> 
   const redis = await getRedis();
   await redis.set(`nonojinx:posted:${eventKey}`, "1", { ex: ttl ?? DEDUP_TTL });
 }
+
+export async function clearPosted(eventKey: string): Promise<void> {
+  if (!hasRedisConfig()) return;
+  const redis = await getRedis();
+  await redis.del(`nonojinx:posted:${eventKey}`);
+}
