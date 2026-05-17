@@ -242,7 +242,7 @@ export const POST: APIRoute = async ({ request }) => {
           }
         } else if (fnName === 'post_to_x') {
           const args = JSON.parse(toolCall.function.arguments);
-          const text: string = args.text;
+          const text: string = args.text.replace(/\\n/g, "\n").replace(/\n{3,}/g, "\n\n");
 
           const twitter = getTwitterClient();
           const result = await twitter.v2.tweet(text);

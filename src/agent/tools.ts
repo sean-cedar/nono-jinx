@@ -44,7 +44,8 @@ async function handleGetNoHitterContext(args: { gamePk: number }): Promise<ToolR
 
 async function handlePostToX(args: { text: string }): Promise<ToolResult> {
   try {
-    const result = await postTweet(args.text);
+    const cleanText = args.text.replace(/\\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+    const result = await postTweet(cleanText);
     return { success: true, data: result };
   } catch (err: any) {
     const errorDetail = err?.data ? JSON.stringify(err.data) : String(err);
