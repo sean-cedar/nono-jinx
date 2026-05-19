@@ -153,14 +153,14 @@ function findPerfectGameBreaker(
  * pitchingSide refers to the state key side (the team pitching the no-hitter).
  * If pitchingSide is "home", the batting side bats in the "top" half.
  * If pitchingSide is "away", the batting side bats in the "bottom" half.
- * Searches in reverse to find the most recent hit.
+ * Searches forward to find the FIRST hit — that's the one that broke the no-hitter.
  */
 function findBreakupHit(
   plays: PlayByPlayEntry[],
   pitchingSide: "home" | "away",
 ): { batter: string; event: string; description: string } | null {
   const battingHalf = pitchingSide === "home" ? "top" : "bottom";
-  for (let i = plays.length - 1; i >= 0; i--) {
+  for (let i = 0; i < plays.length; i++) {
     const play = plays[i];
     if (
       play.about.halfInning === battingHalf &&
