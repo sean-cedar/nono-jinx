@@ -622,6 +622,29 @@ export async function detectNoHitters(
               totalOuts: linescore.currentInning * 3,
             }),
           );
+        } else {
+          // No-hitter was broken and game went Final between polls — emit broken event
+          const wasPerfectGame = state.isPerfectGame ?? false;
+          const overrides: Partial<NoHitterEvent> = {
+            isPerfectGame: wasPerfectGame,
+            inning: linescore.currentInning,
+            inningOrdinal: linescore.currentInningOrdinal,
+            inningHalf: linescore.inningHalf,
+            totalOuts: linescore.currentInning * 3,
+          };
+
+          try {
+            const pbp = await getPlayByPlay(gamePk);
+            const hit = findBreakupHit(pbp.allPlays, side);
+            if (hit) {
+              overrides.breakupBatter = hit.batter;
+              overrides.breakupPlay = hit.event;
+              overrides.breakupDescription = hit.description;
+            }
+          } catch { /* best-effort */ }
+
+          events.push(makeEvent("no_hitter_broken", state, overrides));
+          updatedState[key] = { ...state, broken: true };
         }
       } catch (err) {
         console.error(`Error checking finished game ${gamePk}:`, err);
