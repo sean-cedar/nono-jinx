@@ -6,6 +6,12 @@ export interface ToolResult {
   data: unknown;
 }
 
+let pendingMediaId: string | null = null;
+
+export function setMediaId(id: string | null): void {
+  pendingMediaId = id;
+}
+
 async function handleGetNoHitterContext(args: { gamePk: number }): Promise<ToolResult> {
   try {
     const [linescore, boxscore] = await Promise.all([
@@ -45,7 +51,8 @@ async function handleGetNoHitterContext(args: { gamePk: number }): Promise<ToolR
 async function handlePostToX(args: { text: string }): Promise<ToolResult> {
   try {
     const cleanText = args.text.replace(/\\n/g, "\n").replace(/\n{3,}/g, "\n\n");
-    const result = await postTweet(cleanText);
+    const mediaId = pendingMediaId ?? undefined;
+    const result = await postTweet(cleanText, mediaId);
     return { success: true, data: result };
   } catch (err: any) {
     const errorDetail = err?.data ? JSON.stringify(err.data) : String(err);

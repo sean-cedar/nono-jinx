@@ -18,16 +18,20 @@ function getClient(): TwitterApi {
   return client;
 }
 
-export async function postTweet(text: string): Promise<{ id: string; text: string }> {
+export async function postTweet(text: string, mediaId?: string): Promise<{ id: string; text: string }> {
   const dryRun = process.env.DRY_RUN === "true";
 
   if (dryRun) {
-    console.log(`[DRY RUN] Would post to X: ${text}`);
+    console.log(`[DRY RUN] Would post to X: ${text}${mediaId ? ` (with media: ${mediaId})` : ""}`);
     return { id: "dry-run-" + Date.now(), text };
   }
 
   const api = getClient();
-  const result = await api.v2.tweet(text);
-  console.log(`Posted to X: ${result.data.id}`);
+  const tweetOptions: Parameters<typeof api.v2.tweet>[0] = { text };
+  if (mediaId) {
+    tweetOptions.media = { media_ids: [mediaId] };
+  }
+  const result = await api.v2.tweet(tweetOptions);
+  console.log(`Posted to X: ${result.data.id}${mediaId ? " (with video)" : ""}`);
   return { id: result.data.id, text: result.data.text };
 }
