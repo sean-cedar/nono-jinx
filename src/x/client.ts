@@ -35,3 +35,24 @@ export async function postTweet(text: string, mediaId?: string): Promise<{ id: s
   console.log(`Posted to X: ${result.data.id}${mediaId ? " (with video)" : ""}`);
   return { id: result.data.id, text: result.data.text };
 }
+
+export async function replyToTweet(text: string, replyToId: string, mediaId?: string): Promise<{ id: string; text: string }> {
+  const dryRun = process.env.DRY_RUN === "true";
+
+  if (dryRun) {
+    console.log(`[DRY RUN] Would reply to ${replyToId}: ${text}${mediaId ? ` (with media: ${mediaId})` : ""}`);
+    return { id: "dry-run-reply-" + Date.now(), text };
+  }
+
+  const api = getClient();
+  const tweetOptions: Parameters<typeof api.v2.tweet>[0] = {
+    text,
+    reply: { in_reply_to_tweet_id: replyToId },
+  };
+  if (mediaId) {
+    tweetOptions.media = { media_ids: [mediaId] };
+  }
+  const result = await api.v2.tweet(tweetOptions);
+  console.log(`Replied to ${replyToId}: ${result.data.id}${mediaId ? " (with video)" : ""}`);
+  return { id: result.data.id, text: result.data.text };
+}

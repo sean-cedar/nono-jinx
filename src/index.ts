@@ -6,9 +6,7 @@ import { detectNoHitters } from "./mlb/detector.js";
 import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
-import { setMediaId } from "./agent/tools.js";
-import { findBreakupHighlight } from "./mlb/highlights.js";
-import { uploadVideoToX } from "./x/video.js";
+import { scheduleVideoReply } from "./video-reply.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
 import { hasRedisConfig, logPost, hasPosted, markPosted, clearPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
@@ -34,30 +32,8 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
   console.log(label);
 
   try {
-    const isBrokenUp = event.type === "no_hitter_broken" || event.type === "scoring_change_hit";
-    if (isBrokenUp && event.breakupBatter) {
-      try {
-        const highlightUrl = await findBreakupHighlight(event.gamePk, event.breakupBatter, event.breakupPlay);
-        if (highlightUrl) {
-          const mediaId = await uploadVideoToX(highlightUrl);
-          setMediaId(mediaId);
-          console.log(mediaId ? `Video ready for post (media_id: ${mediaId})` : "Video upload failed, posting without video");
-        } else {
-          setMediaId(null);
-          console.log("No breakup highlight available yet, posting without video");
-        }
-      } catch (err) {
-        console.error("Video highlight pipeline failed (will post without video):", err);
-        setMediaId(null);
-      }
-    } else {
-      setMediaId(null);
-    }
-
     const prompt = loadPromptForEvent(event.type);
     const result = await runAgent(prompt, event);
-
-    setMediaId(null);
 
     if (result.posted) {
       console.log(`Posted: "${result.text}"`);
@@ -83,6 +59,12 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
         }
       }
       await notifyPost(result.text ?? "", isAllJinxed ? "No No Jinx" : event.pitcherName, teams);
+
+      const isBrokenUp = event.type === "no_hitter_broken" || event.type === "scoring_change_hit";
+      if (isBrokenUp && event.breakupBatter && result.tweetId) {
+        scheduleVideoReply(event.gamePk, event.breakupBatter, event.breakupPlay, result.tweetId);
+      }
+
       return true;
     } else {
       console.warn(`Agent did not post for event ${event.type}`);

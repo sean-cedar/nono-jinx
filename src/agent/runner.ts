@@ -181,7 +181,7 @@ const MAX_TOOL_ROUNDS = 3;
 export async function runAgentWithMessage(
   prompt: PromptConfig,
   userMessage: string,
-): Promise<{ posted: boolean; text?: string }> {
+): Promise<{ posted: boolean; text?: string; tweetId?: string }> {
   const openai = getOpenAI();
   const tools = buildToolDefs(prompt);
 
@@ -226,7 +226,8 @@ export async function runAgentWithMessage(
       });
 
       if (toolCall.function.name === "post_to_x" && result.success) {
-        return { posted: true, text: args.text };
+        const tweetData = result.data as { id: string; text: string };
+        return { posted: true, text: args.text, tweetId: tweetData.id };
       }
     }
   }
@@ -238,6 +239,6 @@ export async function runAgentWithMessage(
 export async function runAgent(
   prompt: PromptConfig,
   event: NoHitterEvent,
-): Promise<{ posted: boolean; text?: string }> {
+): Promise<{ posted: boolean; text?: string; tweetId?: string }> {
   return runAgentWithMessage(prompt, await buildUserMessage(event));
 }
