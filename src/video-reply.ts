@@ -11,15 +11,7 @@ import {
   type VideoReplyJob,
 } from "./state/redis.js";
 import { notifyVideoReply } from "./notify.js";
-
-const QUIPS = [
-  "The receipts.",
-  "Footage of the crime.",
-  "Roll the tape.",
-  "The evidence.",
-  "Watch it again.",
-  "In case you missed it.",
-];
+import { generateVideoReplyText } from "./video-reply-text.js";
 
 const HIT_EVENTS = new Set(["Single", "Double", "Triple", "Home Run"]);
 
@@ -35,14 +27,6 @@ const HOMER_INITIAL_DELAY_MS = 90_000;
 const POLL_INTERVAL_MS = 30_000;
 const DEFAULT_MAX_RETRIES = 20;
 const HOMER_MAX_RETRIES = 35;
-
-let quipIndex = 0;
-
-function nextQuip(): string {
-  const quip = QUIPS[quipIndex % QUIPS.length];
-  quipIndex++;
-  return quip;
-}
 
 /**
  * Only schedule video for event types where MLB commonly publishes highlights.
@@ -88,7 +72,7 @@ async function postVideoReply(job: VideoReplyJob, highlightUrl: string, source: 
     return false;
   }
 
-  const quip = nextQuip();
+  const quip = await generateVideoReplyText(job);
   try {
     const reply = await replyToTweet(quip, job.originalTweetId, mediaId);
     await logStage(job, "reply_posted", `Video reply posted (${reply.id})`, { replyId: reply.id, text: quip, source });
@@ -174,6 +158,8 @@ export function scheduleVideoReply(
   breakupDescription?: string,
   breakupPlayId?: string,
   pitcherName?: string,
+  pitchingTeam?: string,
+  battingTeam?: string,
 ): void {
   if (!shouldScheduleVideoReply(eventType, breakupPlay)) {
     console.log(`Skipping video reply for ${eventType} (${breakupPlay ?? "no play"})`);
@@ -183,6 +169,8 @@ export function scheduleVideoReply(
   const job: VideoReplyJob = {
     gamePk,
     batterName,
+    pitchingTeam,
+    battingTeam,
     pitcherName,
     breakupPlay,
     breakupDescription,

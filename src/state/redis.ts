@@ -124,6 +124,8 @@ const VIDEO_REPLY_JOB_TTL = 24 * 60 * 60;
 export interface VideoReplyJob {
   gamePk: number;
   batterName: string;
+  pitchingTeam?: string;
+  battingTeam?: string;
   pitcherName?: string;
   breakupPlay?: string;
   breakupDescription?: string;

@@ -76,6 +76,8 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
           event.videoDescription ?? event.breakupDescription,
           event.videoPlayId ?? event.breakupPlayId,
           event.videoPitcherName,
+          event.pitchingTeam,
+          event.battingTeam,
         );
       }
 
