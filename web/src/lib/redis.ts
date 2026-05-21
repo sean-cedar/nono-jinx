@@ -64,9 +64,9 @@ export async function getActiveNoHitterCount(): Promise<number> {
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
   const key = `nonojinx:${dateStr}`;
-  const data = await redis.get<Record<string, unknown>>(key);
+  const data = await redis.get<Record<string, { broken?: boolean }>>(key);
   if (!data || typeof data !== "object") return 0;
-  return Object.keys(data).length;
+  return Object.values(data).filter((entry) => !entry?.broken).length;
 }
 
 export async function getStats(): Promise<{ jinxed: number; completed: number; jinxRate: number; inProgress: number }> {
