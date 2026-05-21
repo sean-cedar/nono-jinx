@@ -54,9 +54,9 @@ function timeAgo(timestamp: string): string {
 
     <!-- ═══ HERO ═══ -->
     <section class="hero">
-      <div class="hero-accent" aria-hidden="true"></div>
       <div class="hero-layout">
         <div class="hero-content">
+          <div class="hero-accent" aria-hidden="true"></div>
           <h1>NO NO<br/><span class="red">JINX</span></h1>
           <p class="subtitle">Jinxing no-hitters since 2026</p>
         <p class="desc">
@@ -257,18 +257,7 @@ function timeAgo(timestamp: string): string {
   .hero {
     position: relative;
     padding: 6rem 0 4rem;
-  }
-
-  .hero-accent {
-    position: absolute;
-    top: -4rem;
-    right: -12rem;
-    width: 500px;
-    height: 500px;
-    background: linear-gradient(135deg, var(--red) 0%, transparent 60%);
-    opacity: 0.04;
-    border-radius: 50%;
-    pointer-events: none;
+    overflow: hidden;
   }
 
   .hero-layout {
@@ -283,6 +272,24 @@ function timeAgo(timestamp: string): string {
     position: relative;
     max-width: 640px;
     flex: 1;
+    overflow: hidden;
+  }
+
+  .hero-accent {
+    position: absolute;
+    top: -6rem;
+    right: -10rem;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle at 70% 30%, var(--red) 0%, transparent 70%);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-content > :not(.hero-accent) {
+    position: relative;
+    z-index: 1;
   }
 
   h1 {
@@ -802,9 +809,10 @@ function timeAgo(timestamp: string): string {
     }
 
     .hero-accent {
-      width: 300px;
-      height: 300px;
-      right: -8rem;
+      width: 280px;
+      height: 280px;
+      top: -4rem;
+      right: -7rem;
     }
 
     .hero-layout {
