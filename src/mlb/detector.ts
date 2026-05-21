@@ -187,7 +187,7 @@ function findPerfectGameBreaker(
         batter: play.matchup.batter.fullName,
         event: play.result.event,
         description: play.result.description,
-        playId: getInPlayEventId(play),
+        playId: getInPlayEventId(play) ?? getLastPlayEventId(play),
       };
     }
   }
@@ -217,7 +217,7 @@ function findBreakupHit(
         batter: play.matchup.batter.fullName,
         event: play.result.event,
         description: play.result.description,
-        playId: getInPlayEventId(play),
+        playId: getInPlayEventId(play) ?? getLastPlayEventId(play),
       };
     }
   }

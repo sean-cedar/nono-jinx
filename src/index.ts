@@ -6,7 +6,7 @@ import { detectNoHitters } from "./mlb/detector.js";
 import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
-import { scheduleVideoReply, resumePendingVideoReplies } from "./video-reply.js";
+import { scheduleVideoReply, resumePendingVideoReplies, shouldScheduleVideoReply } from "./video-reply.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
 import { hasRedisConfig, logPost, hasPosted, markPosted, clearPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
@@ -60,9 +60,12 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
       }
       await notifyPost(result.text ?? "", isAllJinxed ? "No No Jinx" : event.pitcherName, teams);
 
+      const breakupPlay = event.videoPlay ?? event.breakupPlay;
+      const playId = event.videoPlayId ?? event.breakupPlayId;
       const shouldTryVideoReply =
         !!result.tweetId &&
-        !!(event.videoPlayId || event.breakupPlayId);
+        !!playId &&
+        shouldScheduleVideoReply(event.type, breakupPlay);
       if (shouldTryVideoReply && result.tweetId) {
         scheduleVideoReply(
           event.gamePk,
