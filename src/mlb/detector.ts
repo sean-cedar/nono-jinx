@@ -122,6 +122,51 @@ const PERFECT_GAME_BREAKER_EVENTS = new Set([
   "Catcher Interference",
 ]);
 
+function getInPlayEventId(play: PlayByPlayEntry): string | undefined {
+  const events = play.playEvents ?? [];
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i]?.details?.isInPlay) {
+      return events[i]?.playId;
+    }
+  }
+  return undefined;
+}
+
+function getLastPlayEventId(play: PlayByPlayEntry): string | undefined {
+  const events = play.playEvents ?? [];
+  for (let i = events.length - 1; i >= 0; i--) {
+    if (events[i]?.playId) {
+      return events[i]?.playId;
+    }
+  }
+  return undefined;
+}
+
+function findLastCompletedPlayOfHalfInning(
+  plays: PlayByPlayEntry[],
+  battingSide: "home" | "away",
+  inning: number,
+): { batter: string; pitcher?: string; event: string; description: string; playId?: string } | null {
+  const battingHalf = battingSide === "away" ? "top" : "bottom";
+  for (let i = plays.length - 1; i >= 0; i--) {
+    const play = plays[i];
+    if (
+      play.about.halfInning === battingHalf &&
+      play.about.inning === inning &&
+      play.about.isComplete
+    ) {
+      return {
+        batter: play.matchup.batter.fullName,
+        pitcher: play.matchup.pitcher?.fullName,
+        event: play.result.event,
+        description: play.result.description,
+        playId: getInPlayEventId(play) ?? getLastPlayEventId(play),
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * Find the play that broke the perfect game (walk, HBP, error, etc.).
  * Searches in reverse so the most recent breaker is found first.
@@ -129,7 +174,7 @@ const PERFECT_GAME_BREAKER_EVENTS = new Set([
 function findPerfectGameBreaker(
   plays: PlayByPlayEntry[],
   pitchingSide: "home" | "away",
-): { batter: string; event: string; description: string } | null {
+): { batter: string; event: string; description: string; playId?: string } | null {
   const battingHalf = pitchingSide === "home" ? "top" : "bottom";
   for (let i = plays.length - 1; i >= 0; i--) {
     const play = plays[i];
@@ -142,6 +187,7 @@ function findPerfectGameBreaker(
         batter: play.matchup.batter.fullName,
         event: play.result.event,
         description: play.result.description,
+        playId: getInPlayEventId(play),
       };
     }
   }
@@ -158,7 +204,7 @@ function findPerfectGameBreaker(
 function findBreakupHit(
   plays: PlayByPlayEntry[],
   pitchingSide: "home" | "away",
-): { batter: string; event: string; description: string } | null {
+): { batter: string; event: string; description: string; playId?: string } | null {
   const battingHalf = pitchingSide === "home" ? "top" : "bottom";
   for (let i = 0; i < plays.length; i++) {
     const play = plays[i];
@@ -171,6 +217,7 @@ function findBreakupHit(
         batter: play.matchup.batter.fullName,
         event: play.result.event,
         description: play.result.description,
+        playId: getInPlayEventId(play),
       };
     }
   }
@@ -323,7 +370,20 @@ export async function detectNoHitters(
         const type = active.isPerfectGame
           ? "perfect_game_in_progress"
           : "no_hitter_in_progress";
-        events.push(makeEvent(type, active));
+        const eventOverrides: Partial<NoHitterEvent> = {};
+        try {
+          const battingSide = active.side === "home" ? "away" : "home";
+          const pbp = await getPlayByPlay(active.gamePk);
+          const videoPlay = findLastCompletedPlayOfHalfInning(pbp.allPlays, battingSide, active.completedHalves);
+          if (videoPlay) {
+            eventOverrides.videoBatterName = videoPlay.batter;
+            eventOverrides.videoPitcherName = videoPlay.pitcher;
+            eventOverrides.videoPlay = videoPlay.event;
+            eventOverrides.videoDescription = videoPlay.description;
+            eventOverrides.videoPlayId = videoPlay.playId;
+          }
+        } catch { /* best-effort */ }
+        events.push(makeEvent(type, active, eventOverrides));
       }
 
       // Retroactively detect a perfect game that was broken before we started tracking
@@ -346,6 +406,11 @@ export async function detectNoHitters(
                 breakerOverrides.breakupBatter = breaker.batter;
                 breakerOverrides.breakupPlay = breaker.event;
                 breakerOverrides.breakupDescription = breaker.description;
+                breakerOverrides.breakupPlayId = breaker.playId;
+                breakerOverrides.videoBatterName = breaker.batter;
+                breakerOverrides.videoPlay = breaker.event;
+                breakerOverrides.videoDescription = breaker.description;
+                breakerOverrides.videoPlayId = breaker.playId;
               }
               hitFoundInPBP = !!findBreakupHit(pbp.allPlays, pitchingSide);
             } catch { /* best-effort */ }
@@ -381,6 +446,11 @@ export async function detectNoHitters(
             breakerOverrides.breakupBatter = breaker.batter;
             breakerOverrides.breakupPlay = breaker.event;
             breakerOverrides.breakupDescription = breaker.description;
+            breakerOverrides.breakupPlayId = breaker.playId;
+            breakerOverrides.videoBatterName = breaker.batter;
+            breakerOverrides.videoPlay = breaker.event;
+            breakerOverrides.videoDescription = breaker.description;
+            breakerOverrides.videoPlayId = breaker.playId;
           }
           hitFoundInPBP = !!findBreakupHit(pbp.allPlays, active.side);
         } catch { /* best-effort */ }
@@ -402,7 +472,20 @@ export async function detectNoHitters(
         const type = active.isPerfectGame
           ? "perfect_game_in_progress"
           : "no_hitter_in_progress";
-        events.push(makeEvent(type, active));
+        const eventOverrides: Partial<NoHitterEvent> = {};
+        try {
+          const battingSide = active.side === "home" ? "away" : "home";
+          const pbp = await getPlayByPlay(active.gamePk);
+          const videoPlay = findLastCompletedPlayOfHalfInning(pbp.allPlays, battingSide, active.completedHalves);
+          if (videoPlay) {
+            eventOverrides.videoBatterName = videoPlay.batter;
+            eventOverrides.videoPitcherName = videoPlay.pitcher;
+            eventOverrides.videoPlay = videoPlay.event;
+            eventOverrides.videoDescription = videoPlay.description;
+            eventOverrides.videoPlayId = videoPlay.playId;
+          }
+        } catch { /* best-effort */ }
+        events.push(makeEvent(type, active, eventOverrides));
       }
     }
 
@@ -481,6 +564,7 @@ export async function detectNoHitters(
               breakupBatter: hit.batter,
               breakupPlay: hit.event,
               breakupDescription: hit.description,
+              breakupPlayId: hit.playId,
             };
             events.push(retroEvent);
 
@@ -591,6 +675,7 @@ export async function detectNoHitters(
           overrides.breakupBatter = hit.batter;
           overrides.breakupPlay = hit.event;
           overrides.breakupDescription = hit.description;
+          overrides.breakupPlayId = hit.playId;
           if (isScoringChangePlay(hit.description)) {
             isScoringChange = true;
           }
@@ -640,6 +725,7 @@ export async function detectNoHitters(
               overrides.breakupBatter = hit.batter;
               overrides.breakupPlay = hit.event;
               overrides.breakupDescription = hit.description;
+              overrides.breakupPlayId = hit.playId;
             }
           } catch { /* best-effort */ }
 

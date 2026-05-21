@@ -6,7 +6,7 @@ import { detectNoHitters } from "./mlb/detector.js";
 import { createStore } from "./state/store.js";
 import { loadPromptForEvent } from "./agent/prompt-loader.js";
 import { runAgent } from "./agent/runner.js";
-import { scheduleVideoReply } from "./video-reply.js";
+import { scheduleVideoReply, resumePendingVideoReplies } from "./video-reply.js";
 import { shouldPoll, msUntilNextPollWindow, formatSleepDuration } from "./schedule.js";
 import { hasRedisConfig, logPost, hasPosted, markPosted, clearPosted, incrementJinxCount, incrementCompletedCount } from "./state/redis.js";
 import { notifyPost, notifyError } from "./notify.js";
@@ -60,9 +60,20 @@ async function processEvent(event: NoHitterEvent): Promise<boolean> {
       }
       await notifyPost(result.text ?? "", isAllJinxed ? "No No Jinx" : event.pitcherName, teams);
 
-      const isBrokenUp = event.type === "no_hitter_broken" || event.type === "scoring_change_hit";
-      if (isBrokenUp && event.breakupBatter && result.tweetId) {
-        scheduleVideoReply(event.gamePk, event.breakupBatter, event.breakupPlay, result.tweetId);
+      const shouldTryVideoReply =
+        !!result.tweetId &&
+        !!(event.videoPlayId || event.breakupPlayId);
+      if (shouldTryVideoReply && result.tweetId) {
+        scheduleVideoReply(
+          event.gamePk,
+          event.videoBatterName ?? event.breakupBatter ?? event.pitcherName,
+          event.videoPlay ?? event.breakupPlay,
+          result.tweetId,
+          event.type,
+          event.videoDescription ?? event.breakupDescription,
+          event.videoPlayId ?? event.breakupPlayId,
+          event.videoPitcherName,
+        );
       }
 
       return true;
@@ -225,6 +236,9 @@ const isDirectRun =
   (process.argv[1].endsWith("index.ts") || process.argv[1].endsWith("index.js"));
 
 if (isDirectRun) {
+  resumePendingVideoReplies().catch((err) =>
+    console.error("Failed to resume pending video replies:", err),
+  );
   const useLoop = process.argv.includes("--poll") || process.env.RAILWAY_ENVIRONMENT;
 
   if (useLoop) {

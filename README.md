@@ -53,6 +53,23 @@ npm run poll
 npm run simulate
 ```
 
+## Manual posting
+
+You can post or reply directly from the terminal without using the frontend:
+
+```bash
+# Direct post
+npm run post -- post --text "your post text"
+
+# Direct reply
+npm run post -- reply --tweet-id 1234567890 --text "your reply text"
+
+# AI-generated ad hoc post from an existing prompt
+npm run post -- agent --prompt jinx-daily-preview.md --instruction "Post about today's slate"
+```
+
+These commands use the same `.env` X credentials as the rest of the bot. If `DRY_RUN=true`, they will print the intended post instead of publishing it.
+
 ## Prompt files
 
 Prompts live in `prompts/` as markdown files with YAML frontmatter:

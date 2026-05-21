@@ -225,7 +225,7 @@ export async function runAgentWithMessage(
         content: JSON.stringify(result),
       });
 
-      if (toolCall.function.name === "post_to_x" && result.success) {
+      if ((toolCall.function.name === "post_to_x" || toolCall.function.name === "reply_to_x") && result.success) {
         const tweetData = result.data as { id: string; text: string };
         return { posted: true, text: args.text, tweetId: tweetData.id };
       }

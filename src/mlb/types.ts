@@ -175,12 +175,20 @@ export interface PlayByPlayEntry {
   };
   matchup: {
     batter: { fullName: string };
+    pitcher?: { fullName: string };
   };
   about: {
     halfInning: "top" | "bottom";
     inning: number;
     isComplete: boolean;
+    atBatIndex?: number;
   };
+  playEvents?: Array<{
+    details?: {
+      isInPlay?: boolean;
+    };
+    playId?: string;
+  }>;
 }
 
 // Internal event types
@@ -220,6 +228,12 @@ export interface NoHitterEvent {
   breakupBatter?: string;
   breakupPlay?: string;
   breakupDescription?: string;
+  breakupPlayId?: string;
+  videoBatterName?: string;
+  videoPitcherName?: string;
+  videoPlay?: string;
+  videoDescription?: string;
+  videoPlayId?: string;
 }
 
 export interface NoHitterState {

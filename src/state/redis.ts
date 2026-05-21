@@ -114,3 +114,87 @@ export async function clearPosted(eventKey: string): Promise<void> {
   const redis = await getRedis();
   await redis.del(`nonojinx:posted:${eventKey}`);
 }
+
+const VIDEO_REPLY_JOB_LIST_KEY = "nonojinx:video-reply:pending";
+const VIDEO_REPLY_JOB_KEY_PREFIX = "nonojinx:video-reply:job:";
+const VIDEO_REPLY_LOG_KEY = "nonojinx:video-reply:log";
+const VIDEO_REPLY_LOG_MAX = 500;
+const VIDEO_REPLY_JOB_TTL = 24 * 60 * 60;
+
+export interface VideoReplyJob {
+  gamePk: number;
+  batterName: string;
+  pitcherName?: string;
+  breakupPlay?: string;
+  breakupDescription?: string;
+  breakupPlayId?: string;
+  originalTweetId: string;
+  eventType: string;
+  attempts: number;
+  createdAt: string;
+  lastAttemptAt?: string;
+}
+
+export interface VideoReplyLogEntry {
+  timestamp: string;
+  originalTweetId: string;
+  gamePk: number;
+  batterName: string;
+  stage:
+    | "scheduled"
+    | "resumed"
+    | "attempt"
+    | "highlight_found"
+    | "highlight_missing"
+    | "upload_failed"
+    | "reply_posted"
+    | "reply_failed"
+    | "exhausted";
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+function videoReplyJobKey(originalTweetId: string): string {
+  return `${VIDEO_REPLY_JOB_KEY_PREFIX}${originalTweetId}`;
+}
+
+export async function enqueuePendingVideoReply(job: VideoReplyJob): Promise<void> {
+  if (!hasRedisConfig()) return;
+  const redis = await getRedis();
+  const key = videoReplyJobKey(job.originalTweetId);
+  const existing = await redis.get<VideoReplyJob>(key);
+  await redis.set(key, job, { ex: VIDEO_REPLY_JOB_TTL });
+  if (!existing) {
+    await redis.lpush(VIDEO_REPLY_JOB_LIST_KEY, job.originalTweetId);
+  }
+}
+
+export async function updatePendingVideoReply(job: VideoReplyJob): Promise<void> {
+  if (!hasRedisConfig()) return;
+  const redis = await getRedis();
+  await redis.set(videoReplyJobKey(job.originalTweetId), job, { ex: VIDEO_REPLY_JOB_TTL });
+}
+
+export async function removePendingVideoReply(originalTweetId: string): Promise<void> {
+  if (!hasRedisConfig()) return;
+  const redis = await getRedis();
+  await redis.del(videoReplyJobKey(originalTweetId));
+  await redis.lrem(VIDEO_REPLY_JOB_LIST_KEY, 0, originalTweetId);
+}
+
+export async function getPendingVideoReplies(limit = 100): Promise<VideoReplyJob[]> {
+  if (!hasRedisConfig()) return [];
+  const redis = await getRedis();
+  const ids = await redis.lrange<string>(VIDEO_REPLY_JOB_LIST_KEY, 0, limit - 1);
+  const jobs = await Promise.all(
+    ids.map((id) => redis.get<VideoReplyJob>(videoReplyJobKey(id))),
+  );
+  return jobs.filter((job): job is VideoReplyJob => job !== null);
+}
+
+export async function logVideoReply(entry: VideoReplyLogEntry): Promise<void> {
+  if (!hasRedisConfig()) return;
+  const redis = await getRedis();
+  await redis.lpush(VIDEO_REPLY_LOG_KEY, JSON.stringify(entry));
+  await redis.ltrim(VIDEO_REPLY_LOG_KEY, 0, VIDEO_REPLY_LOG_MAX - 1);
+}

@@ -6,6 +6,7 @@ interface Playback {
 }
 
 interface HighlightItem {
+  guid?: string;
   title: string;
   description: string;
   keywordsAll?: { value: string }[];
@@ -22,8 +23,7 @@ interface GameContentResponse {
 
 export async function findBreakupHighlight(
   gamePk: number,
-  batterName: string,
-  hitType?: string,
+  playId: string,
 ): Promise<string | null> {
   try {
     const url = `${BASE_URL}/api/v1/game/${gamePk}/content`;
@@ -40,26 +40,20 @@ export async function findBreakupHighlight(
       return null;
     }
 
-    const batterLower = batterName.toLowerCase();
-
-    const match = items.find((item) => {
-      const title = item.title?.toLowerCase() ?? "";
-      const desc = item.description?.toLowerCase() ?? "";
-      return title.includes(batterLower) || desc.includes(batterLower);
-    });
+    const match = items.find((item) => item.guid === playId);
 
     if (!match) {
-      console.log(`No highlight matching batter "${batterName}" for game ${gamePk}`);
+      console.log(`No highlight matching playId "${playId}" for game ${gamePk}`);
       return null;
     }
 
     const mp4 = match.playbacks.find((p) => p.name === "mp4Avc");
     if (!mp4) {
-      console.log(`Found highlight for "${batterName}" but no mp4Avc playback available`);
+      console.log(`Found highlight for playId "${playId}" but no mp4Avc playback available`);
       return null;
     }
 
-    console.log(`Found breakup highlight for "${batterName}": ${mp4.url}`);
+    console.log(`Found breakup highlight for playId "${playId}": ${mp4.url}`);
     return mp4.url;
   } catch (err) {
     console.error(`Error fetching highlights for game ${gamePk}:`, err);

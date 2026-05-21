@@ -1,9 +1,15 @@
-import { postTweet } from "../x/client.js";
+import { postTweet, replyToTweet } from "../x/client.js";
 import { getLinescore, getBoxscore } from "../mlb/client.js";
 
 export interface ToolResult {
   success: boolean;
   data: unknown;
+}
+
+let defaultReplyTweetId: string | null = null;
+
+export function setDefaultReplyTweetId(tweetId: string | null): void {
+  defaultReplyTweetId = tweetId;
 }
 
 async function handleGetNoHitterContext(args: { gamePk: number }): Promise<ToolResult> {
@@ -57,9 +63,30 @@ async function handlePostToX(args: { text: string }): Promise<ToolResult> {
   }
 }
 
+async function handleReplyToX(args: { text: string; tweet_id?: string }): Promise<ToolResult> {
+  try {
+    const cleanText = args.text.replace(/\\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+    const replyToId = args.tweet_id ?? defaultReplyTweetId;
+    if (!replyToId) {
+      throw new Error("No reply target provided for reply_to_x");
+    }
+
+    const result = await replyToTweet(cleanText, replyToId);
+    return { success: true, data: result };
+  } catch (err: any) {
+    const errorDetail = err?.data ? JSON.stringify(err.data) : String(err);
+    console.error(`X API reply failed: ${errorDetail}`);
+    return {
+      success: false,
+      data: { error: errorDetail },
+    };
+  }
+}
+
 const TOOL_HANDLERS: Record<string, (args: Record<string, unknown>) => Promise<ToolResult>> = {
   get_no_hitter_context: (args) => handleGetNoHitterContext(args as { gamePk: number }),
   post_to_x: (args) => handlePostToX(args as { text: string }),
+  reply_to_x: (args) => handleReplyToX(args as { text: string; tweet_id?: string }),
 };
 
 export async function executeTool(

@@ -9,6 +9,7 @@
     "dev": "tsx src/index.ts",
     "poll": "tsx src/index.ts --poll",
     "simulate": "tsx src/simulate.ts",
+    "post": "tsx src/post.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
