@@ -696,16 +696,28 @@ export async function detectNoHitters(
         if (linescore.teams[battingSide].hits === 0) {
           const boxscore = await getBoxscore(gamePk);
           const isPerfect = checkPerfectGame(boxscore, battingSide, side);
+          const overrides: Partial<NoHitterEvent> = {
+            inning: linescore.currentInning,
+            inningOrdinal: linescore.currentInningOrdinal,
+            inningHalf: linescore.inningHalf,
+            isPerfectGame: isPerfect,
+            pitcherCount: boxscore.teams[side].pitchers.length,
+            isCombinedNoHitter: boxscore.teams[side].pitchers.length > 1,
+            totalOuts: linescore.currentInning * 3,
+          };
+          try {
+            const pbp = await getPlayByPlay(gamePk);
+            const videoPlay = findLastCompletedPlayOfHalfInning(pbp.allPlays, battingSide, linescore.currentInning);
+            if (videoPlay) {
+              overrides.videoBatterName = videoPlay.batter;
+              overrides.videoPitcherName = videoPlay.pitcher;
+              overrides.videoPlay = videoPlay.event;
+              overrides.videoDescription = videoPlay.description;
+              overrides.videoPlayId = videoPlay.playId;
+            }
+          } catch { /* best-effort */ }
           events.push(
-            makeEvent(isPerfect ? "perfect_game_complete" : "no_hitter_complete", state, {
-              inning: linescore.currentInning,
-              inningOrdinal: linescore.currentInningOrdinal,
-              inningHalf: linescore.inningHalf,
-              isPerfectGame: isPerfect,
-              pitcherCount: boxscore.teams[side].pitchers.length,
-              isCombinedNoHitter: boxscore.teams[side].pitchers.length > 1,
-              totalOuts: linescore.currentInning * 3,
-            }),
+            makeEvent(isPerfect ? "perfect_game_complete" : "no_hitter_complete", state, overrides),
           );
         } else {
           // No-hitter was broken and game went Final between polls — emit broken event
