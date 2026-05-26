@@ -11,7 +11,7 @@ try {
   // X API not configured or rate-limited — show nothing
 }
 
-let stats = { jinxed: 0, completed: 0, jinxRate: 0, inProgress: 0 };
+let stats = { jinxed: 0, completed: 0, jinxRate: 0, inProgress: 0, survivedIsCombined: false };
 try {
   stats = await getStats();
 } catch {
@@ -48,7 +48,7 @@ function timeAgo(timestamp: string): string {
           </div>
           <div class="sticky-divider"></div>
           <div class="sticky-cell">
-            <strong class="sb-cream">{stats.completed}</strong>
+            <strong class="sb-cream">{stats.completed}{stats.survivedIsCombined && <sup class="stat-asterisk">*</sup>}</strong>
             <span class="sb-label">Survived</span>
           </div>
           <div class="sticky-divider"></div>
@@ -98,12 +98,15 @@ function timeAgo(timestamp: string): string {
               </div>
               <div class="scoreboard-row">
                 <span class="scoreboard-label">SURVIVED</span>
-                <span class="scoreboard-number sb-cream">{stats.completed}</span>
+                <span class="scoreboard-number sb-cream">{stats.completed}{stats.survivedIsCombined && <sup class="stat-asterisk">*</sup>}</span>
               </div>
               <div class="scoreboard-row">
                 <span class="scoreboard-label">JINX RATE</span>
                 <span class="scoreboard-number sb-white">{stats.jinxRate}%</span>
               </div>
+              {stats.survivedIsCombined && (
+                <p class="stats-footnote">* Team/combined no-hitter</p>
+              )}
             </div>
           </div>
         )}
@@ -431,6 +434,23 @@ function timeAgo(timestamp: string): string {
 
   .scoreboard-number.sb-cream {
     color: #f5e6a3;
+  }
+
+  .stat-asterisk {
+    font-size: 0.55em;
+    font-weight: 700;
+    vertical-align: super;
+    line-height: 0;
+    margin-left: 0.05em;
+  }
+
+  .stats-footnote {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: rgba(245, 230, 163, 0.75);
+    margin: 0.5rem 0 0;
+    letter-spacing: 0.02em;
+    text-align: center;
   }
 
   .pulse-dot {

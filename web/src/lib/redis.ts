@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { computeJinxRate } from "./jinx-rate";
 
 let client: Redis | null = null;
 
@@ -69,24 +70,52 @@ export async function getActiveNoHitterCount(): Promise<number> {
   return Object.values(data).filter((entry) => !entry?.broken).length;
 }
 
-function computeJinxRate(jinxed: number, completed: number): number {
-  const total = jinxed + completed;
-  if (total === 0) return 0;
-  const pct = (jinxed / total) * 100;
-  // Floor when completed no-nos exist so 592/593 doesn't misleadingly round to 100%.
-  if (completed > 0 && pct < 100) return Math.floor(pct);
-  return Math.round(pct);
+import { computeLedgerStats, type LedgerOutcome } from "./ledger-stats";
+
+const LEDGER_CACHE_KEY = "nonojinx:ledger-stats:v1";
+const LEDGER_CACHE_TTL_SEC = 900;
+
+export interface SiteStats extends LedgerOutcome {
+  inProgress: number;
 }
 
-export async function getStats(): Promise<{ jinxed: number; completed: number; jinxRate: number; inProgress: number }> {
+async function getCachedLedgerStats(): Promise<LedgerOutcome> {
   const redis = getRedis();
-  const [jinxed, completed, inProgress] = await Promise.all([
-    redis.get<number>(STATS_JINXED_KEY),
-    redis.get<number>(STATS_COMPLETED_KEY),
+  const cached = await redis.get<LedgerOutcome>(LEDGER_CACHE_KEY);
+  if (cached) return cached;
+
+  const computed = await computeLedgerStats();
+  await redis.set(LEDGER_CACHE_KEY, computed, { ex: LEDGER_CACHE_TTL_SEC });
+  return computed;
+}
+
+async function getLedgerStatsWithFallback(): Promise<LedgerOutcome> {
+  const redis = getRedis();
+  try {
+    return await getCachedLedgerStats();
+  } catch {
+    const stale = await redis.get<LedgerOutcome>(LEDGER_CACHE_KEY);
+    if (stale) return stale;
+
+    const [jinxed, completed] = await Promise.all([
+      redis.get<number>(STATS_JINXED_KEY),
+      redis.get<number>(STATS_COMPLETED_KEY),
+    ]);
+    const j = jinxed ?? 0;
+    const c = completed ?? 0;
+    return {
+      jinxed: j,
+      completed: c,
+      jinxRate: computeJinxRate(j, c),
+      survivedIsCombined: c > 0,
+    };
+  }
+}
+
+export async function getStats(): Promise<SiteStats> {
+  const [ledger, inProgress] = await Promise.all([
+    getLedgerStatsWithFallback(),
     getActiveNoHitterCount(),
   ]);
-  const j = jinxed ?? 0;
-  const c = completed ?? 0;
-  const jinxRate = computeJinxRate(j, c);
-  return { jinxed: j, completed: c, jinxRate, inProgress };
+  return { ...ledger, inProgress };
 }

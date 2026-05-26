@@ -11,7 +11,7 @@ try {
   // X API not configured or rate-limited — show nothing
 }
 
-let stats = { jinxed: 0, completed: 0, jinxRate: 0, inProgress: 0 };
+let stats = { jinxed: 0, completed: 0, jinxRate: 0, inProgress: 0, survivedIsCombined: false };
 try {
   stats = await getStats();
 } catch {
@@ -41,7 +41,7 @@ function timeAgo(timestamp: string): string {
           <span class="sticky-sep">/</span>
           <span class="sticky-stat"><strong class="red">{stats.jinxed}</strong> Jinxed</span>
           <span class="sticky-sep">/</span>
-          <span class="sticky-stat"><strong>{stats.completed}</strong> Survived</span>
+          <span class="sticky-stat"><strong>{stats.completed}{stats.survivedIsCombined && <sup class="stat-asterisk">*</sup>}</strong> Survived</span>
           <span class="sticky-sep">/</span>
           <span class="sticky-stat"><strong class="red">{stats.jinxRate}%</strong> Rate</span>
         </div>
@@ -83,13 +83,16 @@ function timeAgo(timestamp: string): string {
               <span class="stat-label">Jinxed</span>
             </div>
             <div class="stat">
-              <span class="stat-number">{stats.completed}</span>
+              <span class="stat-number">{stats.completed}{stats.survivedIsCombined && <sup class="stat-asterisk">*</sup>}</span>
               <span class="stat-label">Survived</span>
             </div>
             <div class="stat">
               <span class="stat-number red">{stats.jinxRate}%</span>
               <span class="stat-label">Jinx Rate</span>
             </div>
+            {stats.survivedIsCombined && (
+              <p class="stats-footnote">* Team/combined no-hitter</p>
+            )}
           </div>
         )}
       </div>
@@ -430,6 +433,22 @@ function timeAgo(timestamp: string): string {
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--warm-gray);
+  }
+
+  .stat-asterisk {
+    font-size: 0.55em;
+    font-weight: 700;
+    vertical-align: super;
+    line-height: 0;
+    margin-left: 0.05em;
+  }
+
+  .stats-footnote {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--warm-gray);
+    margin: 0.25rem 0 0;
+    letter-spacing: 0.02em;
   }
 
   /* ─── HOW IT WORKS ─── */
@@ -842,6 +861,12 @@ function timeAgo(timestamp: string): string {
       min-width: auto;
       width: auto;
       text-align: center;
+    }
+
+    .stats-footnote {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-top: 0.75rem;
     }
 
     .how-grid {
