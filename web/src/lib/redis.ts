@@ -69,6 +69,15 @@ export async function getActiveNoHitterCount(): Promise<number> {
   return Object.values(data).filter((entry) => !entry?.broken).length;
 }
 
+function computeJinxRate(jinxed: number, completed: number): number {
+  const total = jinxed + completed;
+  if (total === 0) return 0;
+  const pct = (jinxed / total) * 100;
+  // Floor when completed no-nos exist so 592/593 doesn't misleadingly round to 100%.
+  if (completed > 0 && pct < 100) return Math.floor(pct);
+  return Math.round(pct);
+}
+
 export async function getStats(): Promise<{ jinxed: number; completed: number; jinxRate: number; inProgress: number }> {
   const redis = getRedis();
   const [jinxed, completed, inProgress] = await Promise.all([
@@ -78,7 +87,6 @@ export async function getStats(): Promise<{ jinxed: number; completed: number; j
   ]);
   const j = jinxed ?? 0;
   const c = completed ?? 0;
-  const total = j + c;
-  const jinxRate = total > 0 ? Math.round((j / total) * 100) : 0;
+  const jinxRate = computeJinxRate(j, c);
   return { jinxed: j, completed: c, jinxRate, inProgress };
 }
