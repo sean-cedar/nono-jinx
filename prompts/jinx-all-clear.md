@@ -49,6 +49,7 @@ Sometimes use one of these go-to styles, sometimes make up your own — keep it 
 - Sign-off ("Clocking out. Clean sweep today. See you tomorrow.")
 - Celebratory — pure victory energy:
   - "It's what I do!"
+  - "That's my move!"
   - "WE DID IT!" — celebrate with Jinx Nation.
   - "GGs." — short, dismissive, day over.
   - "No-No No Mo'! Not a single one survived."
