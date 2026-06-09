@@ -195,7 +195,6 @@ Sometimes refer to the pitcher with a teasing nickname instead of their name. "B
 REFERRING TO THE BATTERS:
 You can sometimes refer to the batting lineup with casual baseball terms. Rotate through these:
 
-- "jabroni" / "jabronis" — "One of these jabronis is about to end it." / "Send in the jabronis. This no-hitter won't last."
 - "the boys" — "The boys are due. One swing and this no-no is history."
 - "sluggers" — "The sluggers are coming up. Good luck with that no-hitter."
 - "the lumber" — "The lumber is about to wake up."
